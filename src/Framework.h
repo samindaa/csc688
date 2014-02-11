@@ -8,7 +8,6 @@
 #ifndef FRAMEWORK_H_
 #define FRAMEWORK_H_
 
-#include <iostream> //<< TODO: change this with proper string
 #include <vector>
 #include <map>
 
@@ -126,21 +125,21 @@ class Graph
     class RepresentationEntry
     {
       public:
-        std::string providedModuleName;
+        const char* providedModuleName;
         Node* representationNode;
         void (*update)(Node*, Node*);
 
-        RepresentationEntry(const std::string& providedModuleName, Node* representationNode, void (*update)(Node*, Node*)) :
+        RepresentationEntry(const char* providedModuleName, Node* representationNode, void (*update)(Node*, Node*)) :
             providedModuleName(providedModuleName), representationNode(representationNode), update(update) {}
     };
 
     class ModuleRepresentationEntry
     {
       public:
-        std::string requiredModuleName;
-        std::string requiredRepresentationName;
+        const char* requiredModuleName;
+        const char* requiredRepresentationName;
 
-        ModuleRepresentationEntry(const std::string&  requiredModuleName, const std::string& requiredRepresentationName):
+        ModuleRepresentationEntry(const char*  requiredModuleName, const char* requiredRepresentationName):
           requiredModuleName(requiredModuleName), requiredRepresentationName(requiredRepresentationName) {}
     };
 
@@ -183,10 +182,8 @@ class Graph
     Graph& operator=(Graph const&);
 
   public: /** verbose */
-    friend std::ostream& operator<<(std::ostream& out, const Graph& that);
+    void stream();
 };
-
-std::ostream& operator<<(std::ostream& out, const Graph& that);
 
 // All the computational units are loaded into an instance of this class.
 template <class T>

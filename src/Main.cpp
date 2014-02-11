@@ -10,13 +10,13 @@
 
 int main()
 {
-  std::cout << "*** starts ****" << std::endl; // prints !!!Hello World!!!
   Graph& graph = Graph::getInstance();
   graph.computeGraph();
   graph.topoSort();
-  std::cout << graph << std::endl;
+  graph.stream();
   graph.graphOutputInit();
-  graph.graphOutputUpdate();
-  std::cout << "*** ends ****" << std::endl;
+  int loop = 0;
+  while (loop++ < 100)
+    graph.graphOutputUpdate();
   return 0;
 }
