@@ -8,9 +8,109 @@
 #ifndef FRAMEWORK_H_
 #define FRAMEWORK_H_
 
-#include <vector>
+#include "Energia.h"
+#include "pins_energia.h"
 
 // ADT's for building the graph.
+
+/**
+ * This is a very simple vector class
+ */
+template<typename T>
+class Vector
+{
+private:
+  int theSize;
+  int theCapacity;
+  T* objects;
+
+public:
+  explicit Vector() :
+      theSize(0), theCapacity(0), objects(0)
+  {
+  }
+
+  Vector(const Vector& that) :
+      objects(0)
+  {
+    operator=(that);
+  }
+
+  ~Vector()
+  {
+    if (objects)
+      free(objects);
+  }
+
+  const Vector & operator=(const Vector& that)
+  {
+    if (this != &that)
+    {
+      if (objects)
+        free(objects);
+      objects = 0;
+      theSize = that.size();
+      theCapacity = that.theCapacity;
+
+      objects = (T*)malloc(capacity() * sizeof(T));
+      for (int k = 0; k < size(); k++)
+        objects[k] = that.objects[k];
+
+    }
+
+    return *this;
+  }
+
+  void resize(int newSize)
+  {
+    if (newSize > theCapacity)
+      reserve(newSize * 2 + 1);
+    theSize = newSize;
+  }
+
+  void reserve(int newCapacity)
+  {
+    if (newCapacity < theSize)
+      return;
+
+    T *oldArray = objects;
+
+    objects =  (T*)malloc(newCapacity * sizeof(T));
+    for (int k = 0; k < theSize; k++)
+      objects[k] = oldArray[k];
+
+    theCapacity = newCapacity;
+
+    if (oldArray)
+     free(oldArray);
+  }
+
+  T& operator[](int index) { return objects[index]; }
+  void operator++(int index) { objects[index]++;  }
+  void operator--(int index) { objects[index]--; }
+  const T& operator[](int index) const { return objects[index]; }
+  bool empty() const { return size() == 0;  }
+  int size() const { return theSize; }
+  int capacity() const { return theCapacity; }
+
+  void push_back(T x)
+  {
+    if (theSize == theCapacity)
+      reserve(2 * theCapacity + 1);
+    objects[theSize++] = x;
+  }
+
+  const T& front() const { return objects[0]; }
+  T& front() { return objects[0]; }
+
+  void erase(int index)
+  {
+    for (int i = index; i < size() - 1; ++i)    // for each item that follows 'index'
+      objects[i] = objects[i + 1];            // shift the item down one slot in memory
+    --theSize;
+  }
+
+};
 
 /**
  * Every object in the graph is an instance of a Node class. But this node
@@ -18,10 +118,12 @@
  */
 class Node
 {
+  public:
+    typedef Vector<Node*> NodeVector;
   private:
-    std::vector<Node*> auxiliaryNodes;
-    std::vector<Node*> previousNodes;
-    std::vector<Node*> nextNodes;
+    NodeVector auxiliaryNodes;
+    NodeVector previousNodes;
+    NodeVector nextNodes;
     unsigned int index;
     bool initialized;
     bool computationNode;
@@ -30,7 +132,7 @@ class Node
     explicit Node() : index(0), initialized(false), computationNode(false) {}
     virtual ~Node() {}
 
-    unsigned int getIndex() const { return index; }
+    int getIndex() const { return index; }
     bool getInitialized()   const { return initialized; }
     void setIndex(const unsigned int index) { if (!initialized) this->index = index;}
     void setInitialized(const bool initialized) { if (!this->initialized) this->initialized = initialized; }
@@ -40,23 +142,12 @@ class Node
     void addPreviousNode(Node* that) { if (!initialized) this->previousNodes.push_back(that);  }
     void addNextNode(Node* that) { if (!initialized) this->nextNodes.push_back(that);  }
 
-    typedef std::vector<Node*>::iterator iterator;
-    typedef std::vector<Node*>::const_iterator const_iterator;
-    iterator auxiliaryNodesBegin() { return auxiliaryNodes.begin(); }
-    iterator auxiliaryNodesEnd()   { return auxiliaryNodes.end();   }
-    iterator nextNodesBegin()      { return nextNodes.begin(); }
-    iterator nextNodesEnd()        { return nextNodes.end();   }
-    iterator previousNodesBegin()  { return previousNodes.begin(); }
-    iterator previousNodesEnd()    { return previousNodes.end();   }
-    const_iterator auxiliaryNodesBegin() const { return auxiliaryNodes.begin(); }
-    const_iterator auxiliaryNodesEnd()   const { return auxiliaryNodes.end();   }
-    const_iterator nextNodesBegin()      const { return nextNodes.begin(); }
-    const_iterator nextNodesEnd()        const { return nextNodes.end();   }
-    const_iterator previousNodesBegin()  const { return previousNodes.begin(); }
-    const_iterator previousNodesEnd()    const { return previousNodes.end();   }
     bool previousNodesEmpty()  const { return previousNodes.empty(); }
     bool nextNodesEmpty()      const { return nextNodes.empty(); }
     bool auxiliaryNodesEmpty() const { return auxiliaryNodes.empty(); }
+    NodeVector& getNextNodes()       { return nextNodes; }
+    NodeVector& getPreviousNodes()   { return previousNodes; }
+    NodeVector& getAuxiliaryNodes()  { return auxiliaryNodes; }
 
     virtual const char* getName() const =0;
 };
@@ -82,7 +173,7 @@ class TopoNode
     virtual ~TopoNode() {}
     virtual void init() =0;
     virtual void update() =0;
-    virtual const Node* getNode() const =0;
+    virtual Node* getNode() const =0;
 };
 
 class TopoModule : public TopoNode
@@ -93,7 +184,7 @@ class TopoModule : public TopoNode
     virtual ~TopoModule() {}
     void init() {module->init();}
     void update() { module->execute();}
-    const Node* getNode() const { return module; }
+    Node* getNode() const { return module; }
 };
 
 class TopoRepresentation: public TopoNode
@@ -105,7 +196,7 @@ class TopoRepresentation: public TopoNode
     virtual ~TopoRepresentation() {}
     void init() {/** For later use */}
     void update() { representation->updateThis(module, representation); }
-    const Node* getNode() const { return representation; }
+    Node* getNode() const { return representation; }
 };
 
 
@@ -141,11 +232,11 @@ class Graph
           requiredModuleName(requiredModuleName), requiredRepresentationName(requiredRepresentationName) {}
     };
 
-    typedef std::vector<ModuleEntry*> ModuleVector;
-    typedef std::vector<RepresentationEntry*> RepresentationVector;
-    typedef std::vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    typedef std::vector<int> InDegreesVector;
-    typedef std::vector<Node*> GraphStructureVector;
+    typedef Vector<ModuleEntry*> ModuleVector;
+    typedef Vector<RepresentationEntry*> RepresentationVector;
+    typedef Vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
+    typedef Vector<int> InDegreesVector;
+    typedef Vector<Node*> GraphStructureVector;
     ModuleVector moduleVector;
     RepresentationVector representationVector;
     ModuleRepresentationVector moduleRepresentationRequiredVector;
@@ -154,8 +245,8 @@ class Graph
     GraphStructureVector graphStructureVector;
 
     // For topological sort
-    typedef std::vector<Node*> TopoQueue;
-    typedef std::vector<TopoNode*> GraphOutput;
+    typedef Vector<Node*> TopoQueue;
+    typedef Vector<TopoNode*> GraphOutput;
     TopoQueue topoQueue;
     GraphOutput graphOutput;
 
@@ -177,6 +268,7 @@ class Graph
     ~Graph();
     Graph(Graph const&);
     Graph& operator=(Graph const&);
+    static Graph* theInstance;
 
   public: /** verbose */
     void stream();
@@ -187,18 +279,18 @@ template <class T>
 class ModuleLoader
 {
   public:
-    T* theInstance;
-    ModuleLoader() : theInstance(new T) { Graph::getInstance().addModule(theInstance); }
-    ~ModuleLoader() { delete theInstance; }
+    T theInstance;
+    ModuleLoader() { Graph::getInstance().addModule(&theInstance); }
+    ~ModuleLoader() { }
 };
 
 template<const char* (*getModuleName)(), void (*updateRepresentation)(Node*, Node*), class T>
 class RepresentationProvider
 {
   public:
-    T* theInstance;
-    RepresentationProvider() : theInstance(new T) { Graph::getInstance().providedRepresentation(getModuleName(), theInstance, updateRepresentation); }
-    ~RepresentationProvider() { delete theInstance; }
+    T theInstance;
+    RepresentationProvider() { Graph::getInstance().providedRepresentation(getModuleName(), &theInstance, updateRepresentation); }
+    ~RepresentationProvider() { }
 };
 
 template<const char* (*getModuleName)(), const char* (*getRepresentationName)(), class T>

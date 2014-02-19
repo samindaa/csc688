@@ -11,4 +11,5 @@ void setup()
 void loop()
 {
   Graph::getInstance().graphOutputUpdate();
+  delay(100);
 }

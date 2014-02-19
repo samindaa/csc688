@@ -15,42 +15,32 @@
 
 #include <string.h>
 
+Graph* Graph::theInstance = 0;
+
 Graph::Graph()
 {
 }
 
 Graph::~Graph()
 {
-  for (Graph::ModuleVector::iterator iter = moduleVector.begin(); iter != moduleVector.end();
-      ++iter)
-    delete *iter;
-  for (Graph::RepresentationVector::iterator iter = representationVector.begin();
-      iter != representationVector.end(); ++iter)
-    delete *iter;
-  for (Graph::ModuleRepresentationVector::iterator iter =
-      moduleRepresentationRequiredVector.begin(); iter != moduleRepresentationRequiredVector.end();
-      ++iter)
-    delete *iter;
-  for (Graph::ModuleRepresentationVector::iterator iter = moduleRepresentationUsedVector.begin();
-      iter != moduleRepresentationUsedVector.end(); ++iter)
-    delete *iter;
-  for (Graph::GraphOutput::iterator iter = graphOutput.begin(); iter != graphOutput.end(); ++iter)
-    delete *iter;
-}
-
-Graph& Graph::getInstance()
-{
-  static Graph theInstance;
-  return theInstance;
+  for (int iter = 0; iter < moduleVector.size(); iter++)
+    delete moduleVector[iter];
+  for (int iter = 0; iter < representationVector.size(); iter++)
+    delete representationVector[iter];
+  for (int iter = 0; iter < moduleRepresentationRequiredVector.size(); iter++)
+    delete moduleRepresentationRequiredVector[iter];
+  for (int iter = 0; iter < moduleRepresentationUsedVector.size(); iter++)
+    delete moduleRepresentationUsedVector[iter];
+  for (int iter = 0; iter < graphOutput.size(); iter++)
+    delete graphOutput[iter];
 }
 
 void Graph::addModule(Node* theInstance)
 {
   // Check if a module type exits
-  for (Graph::ModuleVector::const_iterator iter = moduleVector.begin(); iter != moduleVector.end();
-      ++iter)
+  for (int iter = 0; iter < moduleVector.size(); iter++)
   {
-    if (strcmp((*iter)->moduleNode->getName(), theInstance->getName()) == 0)
+    if (strcmp(moduleVector[iter]->moduleNode->getName(), theInstance->getName()) == 0)
     {
 #ifdef OFFLINE
       std::cout << "ERROR! moduleByName=" << theInstance->getName() << " exists!" << std::endl;
@@ -70,14 +60,14 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
     void (*updateRepresentation)(Node*, Node*))
 {
   // Check if a representation type exits
-  for (Graph::RepresentationVector::const_iterator iter = representationVector.begin();
-      iter != representationVector.end(); ++iter)
+  for (int iter = 0; iter < representationVector.size(); iter++)
   {
-    if (strcmp((*iter)->representationNode->getName(), theInstance->getName()) == 0)
+    if (strcmp(representationVector[iter]->representationNode->getName(), theInstance->getName())
+        == 0)
     {
 #ifdef OFFLINE
       std::cout << "ERROR! representationByName=" << theInstance->getName() << " exists, and "
-          << "providedModuleName=" << (*iter)->providedModuleName << std::endl;
+          << "providedModuleName=" << representationVector[iter]->providedModuleName << std::endl;
       exit(1);
 #endif
     }
@@ -105,10 +95,9 @@ void Graph::usedRepresentation(const char* moduleName, const char* representatio
 
 Node* Graph::getRepresentation(const char* representationName)
 {
-  for (Graph::RepresentationVector::iterator iter = representationVector.begin();
-      iter != representationVector.end(); ++iter)
+  for (int iter = 0; iter < representationVector.size(); iter++)
   {
-    Graph::RepresentationEntry* representationEntry = *iter;
+    Graph::RepresentationEntry* representationEntry = representationVector[iter];
     if (strcmp(representationEntry->representationNode->getName(), representationName) == 0)
     {
       if (!representationEntry->representationNode->getInitialized())
@@ -132,56 +121,53 @@ Node* Graph::getRepresentation(const char* representationName)
 void Graph::computeGraph()
 {
   // 1) Add modules
-  for (Graph::ModuleVector::iterator iter = moduleVector.begin(); iter != moduleVector.end();
-      ++iter)
+  for (int iter = 0; iter < moduleVector.size(); iter++)
   {
-    Graph::ModuleEntry* moduleEntry = *iter;
+    Graph::ModuleEntry* moduleEntry = moduleVector[iter];
     graphStructureVector.push_back(moduleEntry->moduleNode);
   }
 
   // 2) Provides representations
-  for (Graph::RepresentationVector::iterator iter = representationVector.begin();
-      iter != representationVector.end(); ++iter)
+  for (int iter = 0; iter < representationVector.size(); iter++)
   {
-    Graph::RepresentationEntry* representationEntry = *iter;
+    Graph::RepresentationEntry* representationEntry = representationVector[iter];
     graphStructureVector.push_back(representationEntry->representationNode);
 
-    for (Graph::ModuleVector::iterator iter2 = moduleVector.begin(); iter2 != moduleVector.end();
-        ++iter2)
+    for (int iter2 = 0; iter2 < moduleVector.size(); iter2++)
     {
-      if (strcmp((*iter2)->moduleNode->getName(), representationEntry->providedModuleName) == 0)
+      Graph::ModuleEntry* moduleEntry = moduleVector[iter2];
+      if (strcmp(moduleEntry->moduleNode->getName(), representationEntry->providedModuleName) == 0)
       {
-        representationEntry->representationNode->addPreviousNode((*iter2)->moduleNode);
+        representationEntry->representationNode->addPreviousNode(moduleEntry->moduleNode);
         ((Representation*) representationEntry->representationNode)->updateThis =
             representationEntry->update;
-        (*iter2)->moduleNode->addNextNode(representationEntry->representationNode);
+        moduleEntry->moduleNode->addNextNode(representationEntry->representationNode);
       }
     }
   }
 
   // 3) Requires representations
-  for (Graph::ModuleRepresentationVector::iterator iter =
-      moduleRepresentationRequiredVector.begin(); iter != moduleRepresentationRequiredVector.end();
-      ++iter)
+  for (int iter = 0; iter < moduleRepresentationRequiredVector.size(); iter++)
   {
-    Graph::ModuleRepresentationEntry* moduleRepresentationEntry = *iter;
+    Graph::ModuleRepresentationEntry* moduleRepresentationEntry =
+        moduleRepresentationRequiredVector[iter];
 
     Node *moduleNode = 0, *representationNode = 0;
-    for (Graph::ModuleVector::iterator iter2 = moduleVector.begin(); iter2 != moduleVector.end();
-        ++iter2)
+    for (int iter2 = 0; iter2 < moduleVector.size(); iter2++)
     {
-      if (strcmp((*iter2)->moduleNode->getName(), moduleRepresentationEntry->requiredModuleName)
+      Graph::ModuleEntry* moduleEntry = moduleVector[iter2];
+      if (strcmp(moduleEntry->moduleNode->getName(), moduleRepresentationEntry->requiredModuleName)
           == 0)
-        moduleNode = (*iter2)->moduleNode;
+        moduleNode = moduleEntry->moduleNode;
     }
 
-    for (Graph::RepresentationVector::iterator iter2 = representationVector.begin();
-        iter2 != representationVector.end(); ++iter2)
+    for (int iter2 = 0; iter2 < representationVector.size(); iter2++)
     {
-      if (strcmp((*iter2)->representationNode->getName(),
+      Graph::RepresentationEntry* representationEntry = representationVector[iter2];
+      if (strcmp(representationEntry->representationNode->getName(),
           moduleRepresentationEntry->requiredRepresentationName) == 0)
       {
-        representationNode = (*iter2)->representationNode;
+        representationNode = representationEntry->representationNode;
       }
     }
 
@@ -212,26 +198,26 @@ void Graph::computeGraph()
   }
 
   // 4) Uses representation
-  for (Graph::ModuleRepresentationVector::iterator iter = moduleRepresentationUsedVector.begin();
-      iter != moduleRepresentationUsedVector.end(); ++iter)
+  for (int iter = 0; iter < moduleRepresentationUsedVector.size(); iter++)
   {
-    Graph::ModuleRepresentationEntry* moduleRepresentationEntry = *iter;
+    Graph::ModuleRepresentationEntry* moduleRepresentationEntry =
+        moduleRepresentationUsedVector[iter];
 
     Node *moduleNode = 0, *representationNode = 0;
-    for (Graph::ModuleVector::iterator iter2 = moduleVector.begin(); iter2 != moduleVector.end();
-        ++iter2)
+    for (int iter2 = 0; iter2 < moduleVector.size(); iter2++)
     {
-      if (strcmp((*iter2)->moduleNode->getName(), moduleRepresentationEntry->requiredModuleName)
+      Graph::ModuleEntry* moduleEntry = moduleVector[iter2];
+      if (strcmp(moduleEntry->moduleNode->getName(), moduleRepresentationEntry->requiredModuleName)
           == 0)
-        moduleNode = (*iter2)->moduleNode;
+        moduleNode = moduleEntry->moduleNode;
     }
 
-    for (Graph::RepresentationVector::iterator iter2 = representationVector.begin();
-        iter2 != representationVector.end(); ++iter2)
+    for (int iter2 = 0; iter2 < representationVector.size(); iter2++)
     {
-      if (strcmp((*iter2)->representationNode->getName(),
+      Graph::RepresentationEntry* representationEntry = representationVector[iter2];
+      if (strcmp(representationEntry->representationNode->getName(),
           moduleRepresentationEntry->requiredRepresentationName) == 0)
-        representationNode = (*iter2)->representationNode;
+        representationNode = representationEntry->representationNode;
     }
 
     if (!(moduleNode && representationNode))
@@ -251,23 +237,21 @@ void Graph::computeGraph()
 void Graph::topoSort()
 {
   // Calculate in-degrees
-  for (Graph::GraphStructureVector::iterator i = graphStructureVector.begin();
-      i != graphStructureVector.end(); ++i)
+  for (int i = 0; i < graphStructureVector.size(); i++)
   {
-    Node* x = *i;
-    for (Node::iterator j = x->nextNodesBegin(); j != x->nextNodesEnd(); ++j)
-      ++inDegreesVector[(*j)->getIndex()];
+    Node* x = graphStructureVector[i];
+    for (int j = 0; j < x->getNextNodes().size(); j++)
+      ++inDegreesVector[x->getNextNodes()[j]->getIndex()];
   }
 
   // Initialize the loop
-  for (size_t i = 0; i < inDegreesVector.size(); i++)
+  for (int i = 0; i < inDegreesVector.size(); i++)
   {
     if (inDegreesVector[i] == 0)
     {
-      for (Graph::GraphStructureVector::iterator j = graphStructureVector.begin();
-          j != graphStructureVector.end(); ++j)
+      for (int j = 0; j < graphStructureVector.size(); ++j)
       {
-        Node* x = *j;
+        Node* x = graphStructureVector[j];
         if (x->getIndex() == i)
           topoQueue.push_back(x);
       }
@@ -278,13 +262,14 @@ void Graph::topoSort()
   while (!topoQueue.empty())
   {
     Node* x = topoQueue.front();
-    topoQueue.erase(topoQueue.begin());
+    //topoQueue.erase(topoQueue.begin());
+    topoQueue.erase(0);
 
     TopoNode* topoNode = 0;
     if (x->getComputationNode())
       topoNode = new TopoModule((Module*) x);
     else
-      topoNode = new TopoRepresentation(((Module*) *(x->previousNodesBegin())),
+      topoNode = new TopoRepresentation(((Module*) (x->getPreviousNodes()[0])),
           (Representation*) x);
 
     if (x->getInitialized())
@@ -293,11 +278,11 @@ void Graph::topoSort()
 #ifdef OFFLINE
       std::cout << "ERROR! Cycle detected!" << std::endl;
       int tabCounter = 0;
-      for (Graph::GraphOutput::const_iterator j = graphOutput.begin(); j != graphOutput.end(); ++j)
+      for (int j = 0; j < graphOutput.size(); j++)
       {
         for (int k = 0; k < tabCounter; k++)
           std::cout << "\t";
-        const Node* y = (*j)->getNode();
+        const Node* y = graphOutput[j]->getNode();
         std::cout << y->getName() << std::endl;
         ++tabCounter;
       }
@@ -306,9 +291,9 @@ void Graph::topoSort()
     }
     x->setInitialized(true);
     graphOutput.push_back(topoNode);
-    for (Node::iterator j = x->nextNodesBegin(); j != x->nextNodesEnd(); ++j)
+    for (int j = 0; j < x->getNextNodes().size(); j++)
     {
-      Node* y = *j;
+      Node* y = x->getNextNodes()[j];
       --inDegreesVector[y->getIndex()];
       if (inDegreesVector[y->getIndex()] == 0)
         topoQueue.push_back(y);
@@ -318,7 +303,8 @@ void Graph::topoSort()
   if (graphOutput.size() != graphStructureVector.size())
   {
 #ifdef OFFLINE
-    std::cout << "ERROR! cycle detected!" << std::endl;
+    std::cout << "ERROR! cycle detected! " << graphOutput.size() << " "
+        << graphStructureVector.size() << std::endl;
     exit(1);
 #endif
   }
@@ -335,10 +321,10 @@ void Graph::topoSort()
 void Graph::graphOutputInit()
 {
   // 1) Allocate
-  for (Graph::GraphOutput::iterator iter = graphOutput.begin(); iter != graphOutput.end(); ++iter)
+  for (int iter = 0; iter < graphOutput.size(); iter++)
   {
     // 1) Init()
-    (*iter)->init();
+    graphOutput[iter]->init();
     // 2.1) Execute() / 2.2) Update()
     // (*iter)->update();
   }
@@ -347,11 +333,11 @@ void Graph::graphOutputInit()
 void Graph::graphOutputUpdate()
 {
   // 2) Execute / Update
-  for (Graph::GraphOutput::iterator iter = graphOutput.begin(); iter != graphOutput.end(); ++iter)
+  for (int iter = 0; iter < graphOutput.size(); iter++)
   {
     //startTimer((*iter)->getNode()->getName());
     // 2.1) Execute() / 2.2) Update()
-    (*iter)->update();
+    graphOutput[iter]->update();
     //stopTimer((*iter)->getNode()->getName());
   }
 
@@ -363,19 +349,17 @@ void Graph::stream()
 #ifdef OFFLINE
   std::cout << std::endl << std::endl;
   // This shows the raw graph
-  for (Graph::ModuleVector::const_iterator iter = moduleVector.begin(); iter != moduleVector.end();
-      ++iter)
+  for (int iter = 0; iter < moduleVector.size(); iter++)
   {
-    const Graph::ModuleEntry* moduleEntry = *iter;
+    const Graph::ModuleEntry* moduleEntry = moduleVector[iter];
     std::cout << moduleEntry->moduleNode->getName() << " " << moduleEntry->moduleNode->getIndex()
         << std::endl;
   }
 
   std::cout << std::endl;
-  for (Graph::RepresentationVector::const_iterator iter = representationVector.begin();
-      iter != representationVector.end(); ++iter)
+  for (int iter = 0; iter < representationVector.size(); iter++)
   {
-    const Graph::RepresentationEntry* representationEntry = *iter;
+    const Graph::RepresentationEntry* representationEntry = representationVector[iter];
     std::cout << representationEntry->representationNode->getName() << " "
         << representationEntry->representationNode->getIndex() << " "
         << representationEntry->providedModuleName << std::endl;
@@ -383,24 +367,21 @@ void Graph::stream()
 
   std::cout << std::endl;
 
-  for (Graph::GraphStructureVector::const_iterator iter = graphStructureVector.begin();
-      iter != graphStructureVector.end(); ++iter)
+  for (int iter = 0; iter < graphStructureVector.size(); iter++)
   {
-    Node* curr = *iter;
+    Node* curr = graphStructureVector[iter];
     std::cout << "[" << curr->getIndex() << ":" << curr->getName() << "] ";
-    for (Node::const_iterator iter2 = curr->nextNodesBegin(); iter2 != curr->nextNodesEnd();
-        ++iter2)
+    for (int iter2 = 0; iter2 != curr->getNextNodes().size(); iter2++)
     {
-      Node* next = *iter2;
+      Node* next = curr->getNextNodes()[iter2];
       std::cout << "[" << next->getIndex() << ":" << next->getName() << "] ";
     }
     std::cout << std::endl;
   }
 
-  for (Graph::GraphOutput::const_iterator iter = graphOutput.begin(); iter != graphOutput.end();
-      ++iter)
+  for (int iter = 0; iter < graphOutput.size(); iter++)
   {
-    const Node* x = (*iter)->getNode();
+    const Node* x = graphOutput[iter]->getNode();
     std::cout << x->getIndex() << ":" << x->getName() << std::endl;
   }
 
@@ -412,32 +393,29 @@ void Graph::stream()
   {
     graph << "digraph G {\n";
     graph << "\t node [shape=box, color=lightblue2, style=filled]; ";
-    for (Graph::GraphOutput::const_iterator iter = graphOutput.begin(); iter != graphOutput.end();
-        ++iter)
+    for (int iter = 0; iter < graphOutput.size(); iter++)
     {
-      const Node* x = (*iter)->getNode();
+      const Node* x = graphOutput[iter]->getNode();
       if (x->getComputationNode())
         graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     graph << "\t node [shape=ellipse, color=lightpink, style=filled]; ";
-    for (Graph::GraphOutput::const_iterator iter = graphOutput.begin(); iter != graphOutput.end();
-        ++iter)
+    for (int iter = 0; iter < graphOutput.size(); iter++)
     {
-      const Node* x = (*iter)->getNode();
+      Node* x = graphOutput[iter]->getNode();
       if (!x->getComputationNode())
         graph << " " << x->getName() << "; ";
     }
     graph << "\n";
-    for (Graph::GraphOutput::const_iterator iter = graphOutput.begin(); iter != graphOutput.end();
-        ++iter)
+    for (int iter = 0; iter < graphOutput.size(); iter++)
     {
-      const Node* x = (*iter)->getNode();
+      Node* x = graphOutput[iter]->getNode();
       if (!x->nextNodesEmpty())
       {
-        for (Node::const_iterator j = x->nextNodesBegin(); j != x->nextNodesEnd(); ++j)
+        for (int j = 0; j < x->getNextNodes().size(); j++)
         {
-          Node* y = *j;
+          Node* y = x->getNextNodes()[j];
           if (y->getComputationNode())
             graph << "edge [color=green]; \n";
           else
@@ -451,15 +429,15 @@ void Graph::stream()
       }
     }
     graph << "edge [color=red]; \n";
-    for (Graph::GraphOutput::const_iterator iter = graphOutput.begin(); iter != graphOutput.end();
-        ++iter)
+    for (int iter = 0; iter < graphOutput.size();
+        iter++)
     {
-      const Node* x = (*iter)->getNode();
+       Node* x = graphOutput[iter]->getNode();
       if (!x->auxiliaryNodesEmpty())
       {
-        for (Node::const_iterator j = x->auxiliaryNodesBegin(); j != x->auxiliaryNodesEnd(); ++j)
+        for (int j = 0; j < x->getAuxiliaryNodes().size(); j++)
         {
-          Node* y = *j;
+          Node* y = x->getAuxiliaryNodes()[j];
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
         }
       }
@@ -474,5 +452,13 @@ void Graph::stream()
     std::cerr << "ERROR! unable to open the graph_structure.dot file" << std::endl;
   }
 #endif
+}
+
+
+Graph& Graph::getInstance()
+{
+  if (!theInstance)
+    theInstance = new Graph;
+  return *theInstance;
 }
 
