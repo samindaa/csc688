@@ -8,8 +8,10 @@
 #ifndef FRAMEWORK_H_
 #define FRAMEWORK_H_
 
+#ifndef OFFLINE
 #include "Energia.h"
 #include "pins_energia.h"
+#endif
 
 // ADT's for building the graph.
 
@@ -249,6 +251,7 @@ class Graph
     typedef Vector<TopoNode*> GraphOutput;
     TopoQueue topoQueue;
     GraphOutput graphOutput;
+    int errorValue;
 
     static Graph& getInstance();
     void addModule(Node* theInstance);
@@ -262,6 +265,9 @@ class Graph
     void topoSort();
     void graphOutputInit();
     void graphOutputUpdate();
+
+  private:
+    void errorHandler();
 
   protected:
     Graph();

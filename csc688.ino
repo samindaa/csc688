@@ -11,5 +11,5 @@ void setup()
 void loop()
 {
   Graph::getInstance().graphOutputUpdate();
-  delay(100);
+  delay(100); // ADC to recover
 }

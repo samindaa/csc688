@@ -17,7 +17,8 @@
 
 Graph* Graph::theInstance = 0;
 
-Graph::Graph()
+Graph::Graph() :
+    errorValue(-1)
 {
 }
 
@@ -45,6 +46,8 @@ void Graph::addModule(Node* theInstance)
 #ifdef OFFLINE
       std::cout << "ERROR! moduleByName=" << theInstance->getName() << " exists!" << std::endl;
       exit(1);
+#else
+      errorValue = 1;
 #endif
     }
   }
@@ -67,8 +70,10 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
     {
 #ifdef OFFLINE
       std::cout << "ERROR! representationByName=" << theInstance->getName() << " exists, and "
-          << "providedModuleName=" << representationVector[iter]->providedModuleName << std::endl;
+      << "providedModuleName=" << representationVector[iter]->providedModuleName << std::endl;
       exit(1);
+#else
+      errorValue = 2;
 #endif
     }
   }
@@ -105,6 +110,8 @@ Node* Graph::getRepresentation(const char* representationName)
 #ifdef OFFLINE
         std::cerr << " ERROR! " << std::endl;
         exit(1);
+#else
+        errorValue = 3;
 #endif
       }
       return representationEntry->representationNode;
@@ -114,12 +121,16 @@ Node* Graph::getRepresentation(const char* representationName)
   // This is a double check and nothing should enter at this point
   std::cerr << " ERROR! " << std::endl;
   exit(1);
+#else
+  errorValue = 4;
 #endif
   return 0;
 }
 
 void Graph::computeGraph()
 {
+  // 0) Loading errors
+  errorHandler();
   // 1) Add modules
   for (int iter = 0; iter < moduleVector.size(); iter++)
   {
@@ -166,23 +177,23 @@ void Graph::computeGraph()
       Graph::RepresentationEntry* representationEntry = representationVector[iter2];
       if (strcmp(representationEntry->representationNode->getName(),
           moduleRepresentationEntry->requiredRepresentationName) == 0)
-      {
         representationNode = representationEntry->representationNode;
-      }
     }
 
     if (moduleNode == 0)
     {
 #ifdef OFFLINE
       std::cout << "requiredModuleName=" << moduleRepresentationEntry->requiredModuleName
-          << " is missing!" << std::endl;
+      << " is missing!" << std::endl;
+#else
+      errorValue = 5;
 #endif
     }
     if (representationNode == 0)
     {
 #ifdef OFFLINE
       std::cout << "requiredRepresentationName="
-          << moduleRepresentationEntry->requiredRepresentationName << " is missing!" << std::endl;
+      << moduleRepresentationEntry->requiredRepresentationName << " is missing!" << std::endl;
 #endif
     }
     if (!(moduleNode && representationNode))
@@ -190,11 +201,13 @@ void Graph::computeGraph()
 #ifdef OFFLINE
       std::cerr << "ERROR " << std::endl;
       exit(1);
+#else
+      errorValue = 6;
 #endif
 
     }
+    errorHandler();
     representationNode->addNextNode(moduleNode);
-
   }
 
   // 4) Uses representation
@@ -225,11 +238,12 @@ void Graph::computeGraph()
 #ifdef OFFLINE
       std::cerr << "ERROR!" << std::endl;
       exit(1);
+#else
+      errorValue = 7;
 #endif
     }
-
+    errorHandler();
     representationNode->addAuxiliaryNode(moduleNode);
-
   }
 
 }
@@ -281,12 +295,15 @@ void Graph::topoSort()
       for (int j = 0; j < graphOutput.size(); j++)
       {
         for (int k = 0; k < tabCounter; k++)
-          std::cout << "\t";
+        std::cout << "\t";
         const Node* y = graphOutput[j]->getNode();
         std::cout << y->getName() << std::endl;
         ++tabCounter;
       }
       exit(1);
+#else
+      errorValue = 8;
+      errorHandler();
 #endif
     }
     x->setInitialized(true);
@@ -304,8 +321,11 @@ void Graph::topoSort()
   {
 #ifdef OFFLINE
     std::cout << "ERROR! cycle detected! " << graphOutput.size() << " "
-        << graphStructureVector.size() << std::endl;
+    << graphStructureVector.size() << std::endl;
     exit(1);
+#else
+    errorValue = 9;
+    errorHandler();
 #endif
   }
 
@@ -314,6 +334,9 @@ void Graph::topoSort()
 #ifdef OFFLINE
     std::cerr << "ERROR!" << std::endl;
     exit(1);
+#else
+    errorValue = 10;
+    errorHandler();
 #endif
   }
 }
@@ -341,7 +364,27 @@ void Graph::graphOutputUpdate()
     //stopTimer((*iter)->getNode()->getName());
   }
 
-  //displayTimers();
+}
+
+void Graph::errorHandler()
+{
+  if (errorValue > 0)
+  {
+#ifndef OFFLINE
+    pinMode(RED_LED, OUTPUT);
+    for (;;)
+    {
+      uint8_t ledErrorState = HIGH;
+      for (int i = 0; i < 2 * errorValue; i++)
+      {
+        digitalWrite(RED_LED, ledErrorState);
+        delay(250);
+        ledErrorState ^= HIGH; // toggle
+      }
+      delay(1000); // pause
+    }
+#endif
+  }
 }
 
 void Graph::stream()
@@ -353,7 +396,7 @@ void Graph::stream()
   {
     const Graph::ModuleEntry* moduleEntry = moduleVector[iter];
     std::cout << moduleEntry->moduleNode->getName() << " " << moduleEntry->moduleNode->getIndex()
-        << std::endl;
+    << std::endl;
   }
 
   std::cout << std::endl;
@@ -361,8 +404,8 @@ void Graph::stream()
   {
     const Graph::RepresentationEntry* representationEntry = representationVector[iter];
     std::cout << representationEntry->representationNode->getName() << " "
-        << representationEntry->representationNode->getIndex() << " "
-        << representationEntry->providedModuleName << std::endl;
+    << representationEntry->representationNode->getIndex() << " "
+    << representationEntry->providedModuleName << std::endl;
   }
 
   std::cout << std::endl;
@@ -397,7 +440,7 @@ void Graph::stream()
     {
       const Node* x = graphOutput[iter]->getNode();
       if (x->getComputationNode())
-        graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     graph << "\t node [shape=ellipse, color=lightpink, style=filled]; ";
@@ -405,7 +448,7 @@ void Graph::stream()
     {
       Node* x = graphOutput[iter]->getNode();
       if (!x->getComputationNode())
-        graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
@@ -417,9 +460,9 @@ void Graph::stream()
         {
           Node* y = x->getNextNodes()[j];
           if (y->getComputationNode())
-            graph << "edge [color=green]; \n";
+          graph << "edge [color=green]; \n";
           else
-            graph << "edge [color=blue]; \n";
+          graph << "edge [color=blue]; \n";
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
         }
       }
@@ -432,7 +475,7 @@ void Graph::stream()
     for (int iter = 0; iter < graphOutput.size();
         iter++)
     {
-       Node* x = graphOutput[iter]->getNode();
+      Node* x = graphOutput[iter]->getNode();
       if (!x->auxiliaryNodesEmpty())
       {
         for (int j = 0; j < x->getAuxiliaryNodes().size(); j++)
@@ -453,7 +496,6 @@ void Graph::stream()
   }
 #endif
 }
-
 
 Graph& Graph::getInstance()
 {

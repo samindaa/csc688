@@ -17,6 +17,8 @@ END_MODULE
 
 class TestModule1: public TestModule1Base
 {
+  private:
+    uint8_t toggle;
 public:
   void init();
   void execute();

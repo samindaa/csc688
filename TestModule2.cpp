@@ -12,15 +12,17 @@ void TestModule2::init()
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
   //pinMode(BLUE_LED, OUTPUT);
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+  //digitalWrite(BLUE_LED, LOW)
 }
 
 void TestModule2::execute()
 {
-  //if (theTestRepresentation1->blinkslow)
-  //  blinkslow();
+  if (theTestRepresentation1->blinkslow)
+    blinkslow();
   if (theTestRepresentation1->blinkfast)
     blinkfast();
-  
 
 }
 
