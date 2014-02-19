@@ -155,6 +155,7 @@ class Graph
     InDegreesMap inDegreesMap;
     GraphStructure graphStructure;
     unsigned int nodeCounter;
+    bool error;
 
     // For topological sort
     typedef std::vector<Node*> TopoQueue;
@@ -182,7 +183,7 @@ class Graph
     Graph& operator=(Graph const&);
 
   public: /** verbose */
-    void stream();
+    //void stream();
 };
 
 // All the computational units are loaded into an instance of this class.

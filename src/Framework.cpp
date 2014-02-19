@@ -7,13 +7,12 @@
 
 #include "Framework.h"
 
-#include <iostream> //<< TODO: remove
 #include <string.h>   //<< Not to be removed
-#include <cstdlib>  //<< TODO: remove
-#include <fstream>  //<< TODO: remove
+#include <stdlib.h>  //<< TODO: remove
+//#include <fstream>  //<< TODO: remove
 
 Graph::Graph() :
-    nodeCounter(0)
+    nodeCounter(0), error(false)
 {
 }
 
@@ -52,8 +51,10 @@ void Graph::addModule(Node* theInstance)
   {
     if (strcmp((*iter)->moduleNode->getName(), theInstance->getName()) == 0)
     {
-      std::cout << "ERROR! moduleByName=" << theInstance->getName()
-          << " exists!" << std::endl;
+      error = true;
+      // TODO:
+     /* std::cout << "ERROR! moduleByName=" << theInstance->getName()
+          << " exists!" << std::endl; */
       exit(1);
     }
   }
@@ -75,9 +76,10 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
     if (strcmp((*iter)->representationNode->getName(), theInstance->getName())
         == 0)
     {
-      std::cout << "ERROR! representationByName=" << theInstance->getName()
+      error = true;
+      /*std::cout << "ERROR! representationByName=" << theInstance->getName()
           << " exists, and " << "providedModuleName="
-          << (*iter)->providedModuleName << std::endl;
+          << (*iter)->providedModuleName << std::endl;*/
       exit(1);
     }
   }
@@ -116,14 +118,16 @@ Node* Graph::getRepresentation(const char* representationName)
     {
       if (!representationEntry->representationNode->getInitialized())
       {
-        std::cerr << " ERROR! " << std::endl;
+        error = true;
+       /* std::cerr << " ERROR! " << std::endl;*/
         exit(1);
       }
       return representationEntry->representationNode;
     }
   }
   /** This is a double check and nothing should enter at this point */
-  std::cerr << " ERROR! " << std::endl;
+  error = true;
+  /*std::cerr << " ERROR! " << std::endl;*/
   exit(1);
   return 0;
 }
@@ -194,19 +198,22 @@ void Graph::computeGraph()
 
     if (moduleNode == 0)
     {
-      std::cout << "requiredModuleName="
+     /* std::cout << "requiredModuleName="
           << moduleRepresentationEntry->requiredModuleName << " is missing!"
-          << std::endl;
+          << std::endl;*/
+      error = true;
     }
     if (representationNode == 0)
     {
-      std::cout << "requiredRepresentationName="
+      error = true;
+      /*std::cout << "requiredRepresentationName="
           << moduleRepresentationEntry->requiredRepresentationName
-          << " is missing!" << std::endl;
+          << " is missing!" << std::endl;*/
     }
     if (!(moduleNode && representationNode))
     {
-      std::cerr << "ERROR " << std::endl;
+      error = true;
+      /*std::cerr << "ERROR " << std::endl;*/
       exit(1);
     }
     representationNode->addNextNode(moduleNode);
@@ -240,7 +247,8 @@ void Graph::computeGraph()
 
     if (!(moduleNode && representationNode))
     {
-      std::cerr << "ERROR!" << std::endl;
+      error = true;
+      /*std::cerr << "ERROR!" << std::endl;*/
       exit(1);
     }
 
@@ -285,7 +293,8 @@ void Graph::topoSort()
     if (x->getInitialized())
     {
       graphOutput.push_back(topoNode);
-      std::cout << "ERROR! Cycle detected!" << std::endl;
+      error  = true;
+      /*std::cout << "ERROR! Cycle detected!" << std::endl;
       int tabCounter = 0;
       for (Graph::GraphOutput::const_iterator j = graphOutput.begin();
           j != graphOutput.end(); ++j)
@@ -295,7 +304,7 @@ void Graph::topoSort()
         const Node* y = (*j)->getNode();
         std::cout << y->getName() << std::endl;
         ++tabCounter;
-      }
+      }*/
       exit(1);
     }
     x->setInitialized(true);
@@ -311,13 +320,15 @@ void Graph::topoSort()
 
   if (graphOutput.size() != graphStructure.size())
   {
-    std::cout << "ERROR! cycle detected!" << std::endl;
+    error = true;
+    /*std::cout << "ERROR! cycle detected!" << std::endl;*/
     exit(1);
   }
 
   if (graphOutput.size() != graphStructure.size())
   {
-    std::cerr << "ERROR!" << std::endl;
+    error = true;
+    /*std::cerr << "ERROR!" << std::endl;*/
     exit(1);
   }
 }
@@ -350,7 +361,7 @@ void Graph::graphOutputUpdate()
   //displayTimers();
 }
 
-void Graph::stream()
+/*void Graph::stream()
 {
   std::cout << std::endl << std::endl;
   // This shows the raw graph
@@ -466,5 +477,5 @@ void Graph::stream()
     std::cerr << "ERROR! unable to open the graph_structure.dot file"
         << std::endl;
   }
-}
+}*/
 

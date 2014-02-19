@@ -13,7 +13,6 @@ int main()
   Graph& graph = Graph::getInstance();
   graph.computeGraph();
   graph.topoSort();
-  graph.stream();
   graph.graphOutputInit();
   int loop = 0;
   while (loop++ < 100)
