@@ -8,8 +8,8 @@
 #ifndef TESTMODULE1_H_
 #define TESTMODULE1_H_
 
-#include "../Template.h"
-#include "../representations/TestRepresentation1.h"
+#include "Template.h"
+#include "TestRepresentation1.h"
 
 MODULE(TestModule1)
 PROVIDES(TestRepresentation1)

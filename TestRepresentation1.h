@@ -8,13 +8,13 @@
 #ifndef TESTREPRESENTATION1_H_
 #define TESTREPRESENTATION1_H_
 
-#include "../Template.h"
+#include "Template.h"
 
 REPRESENTATION(TestRepresentation1)
 class TestRepresentation1: public TestRepresentation1Base
 {
 public:
-  unsigned int x;
+  int x;
   TestRepresentation1() :
       x(0)
   {

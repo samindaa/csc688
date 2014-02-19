@@ -8,8 +8,8 @@
 #ifndef TESTMODULE2_H_
 #define TESTMODULE2_H_
 
-#include "../Template.h"
-#include "../representations/TestRepresentation1.h"
+#include "Template.h"
+#include "TestRepresentation1.h"
 
 MODULE(TestModule2)
 REQUIRES(TestRepresentation1)

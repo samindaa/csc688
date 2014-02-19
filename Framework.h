@@ -9,8 +9,6 @@
 #define FRAMEWORK_H_
 
 #include <vector>
-#include <map>
-
 
 // ADT's for building the graph.
 
@@ -146,16 +144,14 @@ class Graph
     typedef std::vector<ModuleEntry*> ModuleVector;
     typedef std::vector<RepresentationEntry*> RepresentationVector;
     typedef std::vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    typedef std::map<unsigned int, int> InDegreesMap;
-    typedef std::map<unsigned int, Node*> GraphStructure;
+    typedef std::vector<int> InDegreesVector;
+    typedef std::vector<Node*> GraphStructureVector;
     ModuleVector moduleVector;
     RepresentationVector representationVector;
     ModuleRepresentationVector moduleRepresentationRequiredVector;
     ModuleRepresentationVector moduleRepresentationUsedVector;
-    InDegreesMap inDegreesMap;
-    GraphStructure graphStructure;
-    unsigned int nodeCounter;
-    bool error;
+    InDegreesVector inDegreesVector;
+    GraphStructureVector graphStructureVector;
 
     // For topological sort
     typedef std::vector<Node*> TopoQueue;
@@ -183,7 +179,7 @@ class Graph
     Graph& operator=(Graph const&);
 
   public: /** verbose */
-    //void stream();
+    void stream();
 };
 
 // All the computational units are loaded into an instance of this class.
