@@ -9,9 +9,11 @@
 
 void TestModule1::init()
 {
+#ifndef OFFLINE
   //pinMode(PUSH1, INPUT_PULLUP); // left - note _PULLUP
   pinMode(PUSH2, INPUT_PULLUP); // right - note _PULLUP
   toggle = HIGH;
+#endif
 }
 
 void TestModule1::execute()
@@ -21,6 +23,7 @@ void TestModule1::execute()
 void TestModule1::update(TestRepresentation1& theTestRepresentation1)
 {
   theTestRepresentation1.blinkfast = theTestRepresentation1.blinkslow = false;
+#ifndef OFFLINE
   //if (digitalRead(PUSH1) == LOW)
   //  theTestRepresentation1.blinkslow = true;
   if (digitalRead(PUSH2) == LOW)
@@ -31,6 +34,7 @@ void TestModule1::update(TestRepresentation1& theTestRepresentation1)
     else
       theTestRepresentation1.blinkslow = true;
   }
+#endif
 }
 
 MAKE_MODULE(TestModule1)

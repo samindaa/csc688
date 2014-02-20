@@ -11,6 +11,10 @@
 #ifndef OFFLINE
 #include "Energia.h"
 #include "pins_energia.h"
+#else
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
 #endif
 
 // ADT's for building the graph.
