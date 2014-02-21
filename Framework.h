@@ -132,50 +132,50 @@ class Node
   public:
     typedef Vector<Node*> NodeVector;
   private:
-    NodeVector auxiliaryNodes;
-    NodeVector previousNodes;
     NodeVector nextNodes;
+    NodeVector auxiliaryNodes;
+    Node* previousNode;
     uint8_t index;
     bool initialized;
     bool computationNode;
 
   public:
-    explicit Node() : index(0), initialized(false), computationNode(false) {}
+    explicit Node() : previousNode(0), index(0), initialized(false), computationNode(false) {}
     virtual ~Node() {}
 
-    uint8_t getIndex() const { return index; }
-    bool getInitialized()   const { return initialized; }
-    void setIndex(const  uint8_t index) { if (!initialized) this->index = index;}
-    void setInitialized(const bool initialized) { if (!this->initialized) this->initialized = initialized; }
-    bool getComputationNode() const { return computationNode; }
-    void setComputationNode(const bool computationNode) { if (!initialized) this->computationNode = computationNode; }
-    void addAuxiliaryNode(Node* that) { if (!initialized) this->auxiliaryNodes.push_back(that);  }
-    void addPreviousNode(Node* that) { if (!initialized) this->previousNodes.push_back(that);  }
-    void addNextNode(Node* that) { if (!initialized) this->nextNodes.push_back(that);  }
+    uint8_t getIndex()                                  const { return index; }
+    bool isInitialized()                                const { return initialized; }
+    void setIndex(const  uint8_t index)                       { if (!initialized) this->index = index;}
+    void setInitialized(const bool initialized)               { if (!this->initialized) this->initialized = initialized; }
+    bool isComputationNode()                            const { return computationNode; }
+    void setComputationNode(const bool computationNode)       { if (!initialized) this->computationNode = computationNode; }
+    void addAuxiliaryNode(Node* that)                         { if (!initialized) this->auxiliaryNodes.push_back(that);  }
+    void setPreviousNode(Node* that)                          { if (!initialized) this->previousNode = that;  }
+    void addNextNode(Node* that)                              { if (!initialized) this->nextNodes.push_back(that);  }
 
-    bool previousNodesEmpty()  const { return previousNodes.empty(); }
-    bool nextNodesEmpty()      const { return nextNodes.empty(); }
-    bool auxiliaryNodesEmpty() const { return auxiliaryNodes.empty(); }
-    NodeVector& getNextNodes()       { return nextNodes; }
-    NodeVector& getPreviousNodes()   { return previousNodes; }
-    NodeVector& getAuxiliaryNodes()  { return auxiliaryNodes; }
+    bool isPreviousNodeEmpty()                          const { return previousNode == 0; }
+    bool isNextNodesEmpty()                             const { return nextNodes.empty(); }
+    bool auxiliaryNodesEmpty()                          const { return auxiliaryNodes.empty(); }
+    NodeVector& getNextNodes()                                { return nextNodes; }
+    Node* getPreviousNode()                                   { return previousNode; }
+    NodeVector& getAuxiliaryNodes()                           { return auxiliaryNodes; }
 
     virtual const char* getName() const =0;
 };
 
 class Module : public Node
 {
-  public: Module() : Node() {}
-  public: virtual ~Module() {}
-  public: virtual void init() {}
-  public: virtual void execute() {}
+  public: Module() : Node()       {}
+  public: virtual ~Module()       {}
+  public: virtual void init()     {}
+  public: virtual void execute()  {}
 };
 
 class Representation: public Node
 {
   public: void (*updateThis)(Node* , Node* );
-  public: Representation() : Node(), updateThis(0) {}
-  public: virtual ~Representation() {}
+  public: Representation() : Node(), updateThis(0)  {}
+  public: virtual ~Representation()                 {}
 };
 
 class TopoNode
@@ -192,7 +192,7 @@ class TopoModule : public TopoNode
   public:
     Module* module;
     TopoModule(Module*  module) : module(module) {}
-    virtual ~TopoModule() {}
+    virtual ~TopoModule()                        {}
     void init() {module->init();}
     void update() { module->execute();}
     Node* getNode() const { return module; }

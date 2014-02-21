@@ -157,15 +157,19 @@
 // Bosch BMP180 chip ID
 #define BMP180_CHIP_ID   85    // Bosch BMP180 chip identifier - not mentioned in datasheet but found in example source code
 // register addresses
-#define BMP180_REG_ID    0xd0  // chip ID register
-#define BMP180_REG_VER   0xd1  // chip version register
-#define BMP180_REG_CTRL  0xf4  // measurement control
-#define BMP180_REG_ADC   0xf6  // measurement result (MSB, LSB, XLSB)
-#define BMP180_REG_RST   0xe0  // soft reset
-#define BMP180_REG_CAL   0xaa  // start of calibration EEPROM
+#define BMP180_REG_ID    0xD0  // device ID register
+//#define BMP180_REG_VER   0xd1  // chip version register
+#define BMP180_REG_CTRL  0xF4  // measurement control register
+#define BMP180_REG_ADC   0xF6  // measurement result (MSB, LSB, XLSB) (ADC data MSB register)
+#define BMP180_REG_RST   0xE0  // soft reset register
+#define BMP180_REG_CAL   0xAA  // start of calibration EEPROM (AC1 MSB register)
 // measurement commands
-#define BMP180_CMD_T     0x2e  // measure temperature
-#define BMP180_CMD_P     0x34  // measure pressure
+#define BMP180_CTRL_MEAS_SCO    0x20        // Start of conversion
+#define BMP180_CTRL_MEAS_TEMPERATURE    0x0E        // Temperature measurement
+#define BMP180_CTRL_MEAS_PRESSURE       0x14        // Pressure measurement
+#define BMP180_CMD_T     (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE)  //0x2E   measure temperature
+#define BMP180_CMD_P     (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE) //0x34   measure pressure
+
 MODULE(BMP180Module)
   REQUIRES(LaunchPadRepresentation)
   PROVIDES(BMP180Representation)

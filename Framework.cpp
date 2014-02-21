@@ -105,7 +105,7 @@ Node* Graph::getRepresentation(const char* representationName)
     Graph::RepresentationEntry* representationEntry = representationVector[iter];
     if (strcmp(representationEntry->representationNode->getName(), representationName) == 0)
     {
-      if (!representationEntry->representationNode->getInitialized())
+      if (!representationEntry->representationNode->isInitialized())
       {
 #if !defined(ENERGIA)
         std::cerr << " ERROR! " << std::endl;
@@ -149,7 +149,7 @@ void Graph::computeGraph()
       Graph::ModuleEntry* moduleEntry = moduleVector[iter2];
       if (strcmp(moduleEntry->moduleNode->getName(), representationEntry->providedModuleName) == 0)
       {
-        representationEntry->representationNode->addPreviousNode(moduleEntry->moduleNode);
+        representationEntry->representationNode->setPreviousNode(moduleEntry->moduleNode);
         ((Representation*) representationEntry->representationNode)->updateThis =
             representationEntry->update;
         moduleEntry->moduleNode->addNextNode(representationEntry->representationNode);
@@ -280,13 +280,13 @@ void Graph::topoSort()
     topoQueue.erase(0);
 
     TopoNode* topoNode = 0;
-    if (x->getComputationNode())
+    if (x->isComputationNode())
       topoNode = new TopoModule((Module*) x);
     else
-      topoNode = new TopoRepresentation(((Module*) (x->getPreviousNodes()[0])),
+      topoNode = new TopoRepresentation(((Module*) (x->getPreviousNode())),
           (Representation*) x);
 
-    if (x->getInitialized())
+    if (x->isInitialized())
     {
       graphOutput.push_back(topoNode);
 #if !defined(ENERGIA)
@@ -448,7 +448,7 @@ void Graph::stream()
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       const Node* x = graphOutput[iter]->getNode();
-      if (x->getComputationNode())
+      if (x->isComputationNode())
         graph << " " << x->getName() << "; ";
     }
     graph << "\n";
@@ -456,19 +456,19 @@ void Graph::stream()
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       Node* x = graphOutput[iter]->getNode();
-      if (!x->getComputationNode())
+      if (!x->isComputationNode())
         graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       Node* x = graphOutput[iter]->getNode();
-      if (!x->nextNodesEmpty())
+      if (!x->isNextNodesEmpty())
       {
         for (int j = 0; j < x->getNextNodes().size(); j++)
         {
           Node* y = x->getNextNodes()[j];
-          if (y->getComputationNode())
+          if (y->isComputationNode())
             graph << "edge [color=green]; \n";
           else
             graph << "edge [color=blue]; \n";

@@ -31,7 +31,9 @@
 									<listOptionValue builtIn="false" value="&quot;C:\Users\Saminda\Software\energia-0101E0011-windows\energia-0101E0011\hardware\lm4f\variants\stellarpad&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Users\Saminda\Software\energia-0101E0011-windows\energia-0101E0011\hardware\lm4f\libraries\Wire&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.720028273" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.720028273" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="ENERGIA=1"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1637595372" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.exe.debug.741837108" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.exe.debug">
