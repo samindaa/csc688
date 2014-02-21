@@ -7,25 +7,13 @@
 
 #include "TestModule2.h"
 
-void TestModule2::init()
-{
-#ifndef OFFLINE
-  pinMode(RED_LED, OUTPUT);
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(BLUE_LED, OUTPUT);
-  digitalWrite(RED_LED, LOW);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(BLUE_LED, LOW);
-#endif
-}
-
 void TestModule2::execute()
 {
-#ifndef OFFLINE
+#if defined(ENERGIA)
   if (theTestRepresentation1->blinkslow)
-    blinkslow();
+  blinkslow();
   else if (theTestRepresentation1->blinkfast)
-    blinkfast();
+  blinkfast();
   else if (theTestRepresentation2->ulTempValueC > 0)
   {
     // blink green led
@@ -34,13 +22,25 @@ void TestModule2::execute()
     toggle ^= HIGH;
     delay(250);
   }
+  else
+  {
+    uint8_t state = HIGH;
+    for (int i = 0; i < 10; i++)
+    {
+      digitalWrite(RED_LED, state);
+      digitalWrite(RED_LED, state);
+      digitalWrite(GREEN_LED, state);
+      delay(250);
+      state ^= HIGH;
+    }
+  }
 #endif
 
 }
 
 void TestModule2::blinkfast()
 {
-#ifndef OFFLINE
+#if defined(ENERGIA)
   for (int i = 0; i < 10; i++)
   {
     digitalWrite(RED_LED, HIGH);
@@ -57,7 +57,7 @@ void TestModule2::blinkfast()
 }
 void TestModule2::blinkslow()
 {
-#ifndef OFFLINE
+#if defined(ENERGIA)
   for (int i = 0; i < 5; i++)
   {
     digitalWrite(RED_LED, HIGH);

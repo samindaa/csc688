@@ -26,8 +26,6 @@ class TestModule3: public TestModule3Base
 
   public:
     void init();
-    void execute();
-
     void update(TestRepresentation2& theTestRepresentation2);
 };
 

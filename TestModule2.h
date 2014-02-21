@@ -20,7 +20,6 @@ END_MODULE
 class TestModule2: public TestModule2Base
 {
 public:
-  void init();
   void execute();
 
 private:

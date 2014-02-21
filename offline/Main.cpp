@@ -5,8 +5,7 @@
  *      Author: sam
  */
 
-#ifdef OFFLINE
-#include "Framework.h"
+#include "../Framework.h"
 
 int main(int argc, char** argv)
 {
@@ -18,5 +17,4 @@ int main(int argc, char** argv)
   Graph::getInstance().graphOutputUpdate();
   return 0;
 }
-#endif
 

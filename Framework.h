@@ -8,7 +8,7 @@
 #ifndef FRAMEWORK_H_
 #define FRAMEWORK_H_
 
-#ifndef OFFLINE
+#if defined(ENERGIA)
 #include "Energia.h"
 #include "pins_energia.h"
 #else
@@ -17,7 +17,11 @@
 #include <stdint.h>
 #endif
 
-// ADT's for building the graph.
+/**
+ * This framework creates a topologically sorted graph from computational and representational units
+ * created by the user. Since, the framework needs to be run on a MCU, the size (in bytes) of the
+ * framework is minimized. At most 255 nodes can be allocated within the framework.
+ */
 
 /**
  * This is a very simple vector class
@@ -26,8 +30,8 @@ template<typename T>
 class Vector
 {
 private:
-  int theSize;
-  int theCapacity;
+  uint8_t theSize;
+  uint8_t theCapacity;
   T* objects;
 
 public:
@@ -59,7 +63,7 @@ public:
       theCapacity = that.theCapacity;
 
       objects = (T*)malloc(capacity() * sizeof(T));
-      for (int k = 0; k < size(); k++)
+      for (uint8_t k = 0; k < size(); k++)
         objects[k] = that.objects[k];
 
     }
@@ -67,14 +71,14 @@ public:
     return *this;
   }
 
-  void resize(int newSize)
+  void resize(uint8_t newSize)
   {
     if (newSize > theCapacity)
       reserve(newSize * 2 + 1);
     theSize = newSize;
   }
 
-  void reserve(int newCapacity)
+  void reserve(uint8_t newCapacity)
   {
     if (newCapacity < theSize)
       return;
@@ -82,7 +86,7 @@ public:
     T *oldArray = objects;
 
     objects =  (T*)malloc(newCapacity * sizeof(T));
-    for (int k = 0; k < theSize; k++)
+    for (uint8_t k = 0; k < theSize; k++)
       objects[k] = oldArray[k];
 
     theCapacity = newCapacity;
@@ -91,13 +95,13 @@ public:
      free(oldArray);
   }
 
-  T& operator[](int index) { return objects[index]; }
+  T& operator[](uint8_t index) { return objects[index]; }
   void operator++(int index) { objects[index]++;  }
   void operator--(int index) { objects[index]--; }
-  const T& operator[](int index) const { return objects[index]; }
+  const T& operator[](uint8_t index) const { return objects[index]; }
   bool empty() const { return size() == 0;  }
-  int size() const { return theSize; }
-  int capacity() const { return theCapacity; }
+  uint8_t size() const { return theSize; }
+  uint8_t capacity() const { return theCapacity; }
 
   void push_back(T x)
   {
@@ -109,15 +113,16 @@ public:
   const T& front() const { return objects[0]; }
   T& front() { return objects[0]; }
 
-  void erase(int index)
+  void erase(uint8_t index)
   {
-    for (int i = index; i < size() - 1; ++i)    // for each item that follows 'index'
+    for (uint8_t i = index; i < size() - 1; ++i)    // for each item that follows 'index'
       objects[i] = objects[i + 1];            // shift the item down one slot in memory
     --theSize;
   }
 
 };
 
+// ADT's for building the graph.
 /**
  * Every object in the graph is an instance of a Node class. But this node
  * behaves differently according to its responsibilities.
@@ -130,7 +135,7 @@ class Node
     NodeVector auxiliaryNodes;
     NodeVector previousNodes;
     NodeVector nextNodes;
-    unsigned int index;
+    uint8_t index;
     bool initialized;
     bool computationNode;
 
@@ -138,9 +143,9 @@ class Node
     explicit Node() : index(0), initialized(false), computationNode(false) {}
     virtual ~Node() {}
 
-    int getIndex() const { return index; }
+    uint8_t getIndex() const { return index; }
     bool getInitialized()   const { return initialized; }
-    void setIndex(const unsigned int index) { if (!initialized) this->index = index;}
+    void setIndex(const  uint8_t index) { if (!initialized) this->index = index;}
     void setInitialized(const bool initialized) { if (!this->initialized) this->initialized = initialized; }
     bool getComputationNode() const { return computationNode; }
     void setComputationNode(const bool computationNode) { if (!initialized) this->computationNode = computationNode; }
@@ -241,7 +246,7 @@ class Graph
     typedef Vector<ModuleEntry*> ModuleVector;
     typedef Vector<RepresentationEntry*> RepresentationVector;
     typedef Vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    typedef Vector<int> InDegreesVector;
+    typedef Vector<uint8_t> InDegreesVector;
     typedef Vector<Node*> GraphStructureVector;
     ModuleVector moduleVector;
     RepresentationVector representationVector;
@@ -255,7 +260,7 @@ class Graph
     typedef Vector<TopoNode*> GraphOutput;
     TopoQueue topoQueue;
     GraphOutput graphOutput;
-    int errorValue;
+    uint8_t errorValue;
 
     static Graph& getInstance();
     void addModule(Node* theInstance);

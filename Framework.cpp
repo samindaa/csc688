@@ -7,7 +7,7 @@
 
 #include "Framework.h"
 
-#ifdef OFFLINE
+#if !defined(ENERGIA)
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -18,7 +18,7 @@
 Graph* Graph::theInstance = 0;
 
 Graph::Graph() :
-    errorValue(-1)
+    errorValue(0)
 {
 }
 
@@ -43,7 +43,7 @@ void Graph::addModule(Node* theInstance)
   {
     if (strcmp(moduleVector[iter]->moduleNode->getName(), theInstance->getName()) == 0)
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cout << "ERROR! moduleByName=" << theInstance->getName() << " exists!" << std::endl;
       exit(1);
 #else
@@ -68,9 +68,9 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
     if (strcmp(representationVector[iter]->representationNode->getName(), theInstance->getName())
         == 0)
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cout << "ERROR! representationByName=" << theInstance->getName() << " exists, and "
-      << "providedModuleName=" << representationVector[iter]->providedModuleName << std::endl;
+          << "providedModuleName=" << representationVector[iter]->providedModuleName << std::endl;
       exit(1);
 #else
       errorValue = 2;
@@ -107,7 +107,7 @@ Node* Graph::getRepresentation(const char* representationName)
     {
       if (!representationEntry->representationNode->getInitialized())
       {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
         std::cerr << " ERROR! " << std::endl;
         exit(1);
 #else
@@ -117,7 +117,7 @@ Node* Graph::getRepresentation(const char* representationName)
       return representationEntry->representationNode;
     }
   }
-#ifdef OFFLINE
+#if !defined(ENERGIA)
   // This is a double check and nothing should enter at this point
   std::cerr << " ERROR! " << std::endl;
   exit(1);
@@ -182,23 +182,23 @@ void Graph::computeGraph()
 
     if (moduleNode == 0)
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cout << "requiredModuleName=" << moduleRepresentationEntry->requiredModuleName
-      << " is missing!" << std::endl;
+          << " is missing!" << std::endl;
 #else
       errorValue = 5;
 #endif
     }
     if (representationNode == 0)
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cout << "requiredRepresentationName="
-      << moduleRepresentationEntry->requiredRepresentationName << " is missing!" << std::endl;
+          << moduleRepresentationEntry->requiredRepresentationName << " is missing!" << std::endl;
 #endif
     }
     if (!(moduleNode && representationNode))
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cerr << "ERROR " << std::endl;
       exit(1);
 #else
@@ -235,7 +235,7 @@ void Graph::computeGraph()
 
     if (!(moduleNode && representationNode))
     {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cerr << "ERROR!" << std::endl;
       exit(1);
 #else
@@ -289,13 +289,13 @@ void Graph::topoSort()
     if (x->getInitialized())
     {
       graphOutput.push_back(topoNode);
-#ifdef OFFLINE
+#if !defined(ENERGIA)
       std::cout << "ERROR! Cycle detected!" << std::endl;
       int tabCounter = 0;
       for (int j = 0; j < graphOutput.size(); j++)
       {
         for (int k = 0; k < tabCounter; k++)
-        std::cout << "\t";
+          std::cout << "\t";
         const Node* y = graphOutput[j]->getNode();
         std::cout << y->getName() << std::endl;
         ++tabCounter;
@@ -319,9 +319,9 @@ void Graph::topoSort()
 
   if (graphOutput.size() != graphStructureVector.size())
   {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
     std::cout << "ERROR! cycle detected! " << graphOutput.size() << " "
-    << graphStructureVector.size() << std::endl;
+        << graphStructureVector.size() << std::endl;
     exit(1);
 #else
     errorValue = 9;
@@ -331,7 +331,7 @@ void Graph::topoSort()
 
   if (graphOutput.size() != graphStructureVector.size())
   {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
     std::cerr << "ERROR!" << std::endl;
     exit(1);
 #else
@@ -368,35 +368,44 @@ void Graph::graphOutputUpdate()
 
 void Graph::errorHandler()
 {
+
+#if defined(ENERGIA)
   if (errorValue > 0)
   {
-#ifndef OFFLINE
+    Serial.begin(9600);
     pinMode(RED_LED, OUTPUT);
+    pinMode(BLUE_LED, OUTPUT);
     for (;;)
     {
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      Serial.print("errorValue: ");
+      Serial.println(errorValue);
       uint8_t ledErrorState = HIGH;
-      for (int i = 0; i < 2 * errorValue; i++)
+      for (int i = 0; i < errorValue; i++)
       {
         digitalWrite(RED_LED, ledErrorState);
-        delay(250);
+        delay(1000);
         ledErrorState ^= HIGH; // toggle
       }
-      delay(1000); // pause
+      digitalWrite(BLUE_LED, HIGH);
+      delay(5000); // pause
     }
-#endif
   }
+#endif
+
 }
 
 void Graph::stream()
 {
-#ifdef OFFLINE
+#if !defined(ENERGIA)
   std::cout << std::endl << std::endl;
   // This shows the raw graph
   for (int iter = 0; iter < moduleVector.size(); iter++)
   {
     const Graph::ModuleEntry* moduleEntry = moduleVector[iter];
     std::cout << moduleEntry->moduleNode->getName() << " " << moduleEntry->moduleNode->getIndex()
-    << std::endl;
+        << std::endl;
   }
 
   std::cout << std::endl;
@@ -404,8 +413,8 @@ void Graph::stream()
   {
     const Graph::RepresentationEntry* representationEntry = representationVector[iter];
     std::cout << representationEntry->representationNode->getName() << " "
-    << representationEntry->representationNode->getIndex() << " "
-    << representationEntry->providedModuleName << std::endl;
+        << representationEntry->representationNode->getIndex() << " "
+        << representationEntry->providedModuleName << std::endl;
   }
 
   std::cout << std::endl;
@@ -440,7 +449,7 @@ void Graph::stream()
     {
       const Node* x = graphOutput[iter]->getNode();
       if (x->getComputationNode())
-      graph << " " << x->getName() << "; ";
+        graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     graph << "\t node [shape=ellipse, color=lightpink, style=filled]; ";
@@ -448,7 +457,7 @@ void Graph::stream()
     {
       Node* x = graphOutput[iter]->getNode();
       if (!x->getComputationNode())
-      graph << " " << x->getName() << "; ";
+        graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
@@ -460,9 +469,9 @@ void Graph::stream()
         {
           Node* y = x->getNextNodes()[j];
           if (y->getComputationNode())
-          graph << "edge [color=green]; \n";
+            graph << "edge [color=green]; \n";
           else
-          graph << "edge [color=blue]; \n";
+            graph << "edge [color=blue]; \n";
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
         }
       }
@@ -472,8 +481,7 @@ void Graph::stream()
       }
     }
     graph << "edge [color=red]; \n";
-    for (int iter = 0; iter < graphOutput.size();
-        iter++)
+    for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       Node* x = graphOutput[iter]->getNode();
       if (!x->auxiliaryNodesEmpty())
