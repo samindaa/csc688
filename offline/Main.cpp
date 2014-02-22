@@ -18,6 +18,7 @@ int main(int argc, char** argv)
   graph.graphOutputInit();
   for (int i = 0; i < 1000; i++)
     Graph::getInstance().graphOutputUpdate();
+  Graph::deleteInstance();
   std::cout << "*** end ***" << std::endl;
   return 0;
 }
