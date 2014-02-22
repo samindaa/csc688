@@ -96,8 +96,6 @@ public:
   }
 
   T& operator[](uint8_t index) { return objects[index]; }
-  void operator++(int index) { objects[index]++;  }
-  void operator--(int index) { objects[index]--; }
   const T& operator[](uint8_t index) const { return objects[index]; }
   bool empty() const { return size() == 0;  }
   uint8_t size() const { return theSize; }
@@ -120,6 +118,15 @@ public:
     --theSize;
   }
 
+    void purge()
+    {
+      theSize = 0;
+      theCapacity = 0;
+      if (objects)
+        delete[] objects;
+      objects = 0;
+    }
+
 };
 
 // ADT's for building the graph.
@@ -135,17 +142,15 @@ class Node
     NodeVector nextNodes;
     NodeVector auxiliaryNodes;
     Node* previousNode;
-    uint8_t index;
+    uint8_t inDegrees;
     bool initialized;
     bool computationNode;
 
   public:
-    explicit Node() : previousNode(0), index(0), initialized(false), computationNode(false) {}
+    explicit Node() : previousNode(0), inDegrees(0), initialized(false), computationNode(false) {}
     virtual ~Node() {}
 
-    uint8_t getIndex()                                  const { return index; }
     bool isInitialized()                                const { return initialized; }
-    void setIndex(const  uint8_t index)                       { if (!initialized) this->index = index;}
     void setInitialized(const bool initialized)               { if (!this->initialized) this->initialized = initialized; }
     bool isComputationNode()                            const { return computationNode; }
     void setComputationNode(const bool computationNode)       { if (!initialized) this->computationNode = computationNode; }
@@ -159,7 +164,9 @@ class Node
     NodeVector& getNextNodes()                                { return nextNodes; }
     Node* getPreviousNode()                                   { return previousNode; }
     NodeVector& getAuxiliaryNodes()                           { return auxiliaryNodes; }
-
+    void operator++()                                         { inDegrees++;  }
+    void operator--()                                         { inDegrees--; }
+    uint8_t getInDegrees()                              const { return inDegrees; }
     virtual const char* getName() const =0;
 };
 
@@ -177,40 +184,6 @@ class Representation: public Node
   public: Representation() : Node(), updateThis(0)  {}
   public: virtual ~Representation()                 {}
 };
-
-class TopoNode
-{
-  public:
-    virtual ~TopoNode() {}
-    virtual void init() =0;
-    virtual void update() =0;
-    virtual Node* getNode() const =0;
-};
-
-class TopoModule : public TopoNode
-{
-  public:
-    Module* module;
-    TopoModule(Module*  module) : module(module) {}
-    virtual ~TopoModule()                        {}
-    void init() {module->init();}
-    void update() { module->execute();}
-    Node* getNode() const { return module; }
-};
-
-class TopoRepresentation: public TopoNode
-{
-  public:
-    Module* module;
-    Representation* representation;
-    TopoRepresentation(Module* module, Representation* representation) : module(module), representation(representation) {}
-    virtual ~TopoRepresentation() {}
-    void init() {/** For later use */}
-    void update() { representation->updateThis(module, representation); }
-    Node* getNode() const { return representation; }
-};
-
-
 
 class Graph
 {
@@ -246,18 +219,17 @@ class Graph
     typedef Vector<ModuleEntry*> ModuleVector;
     typedef Vector<RepresentationEntry*> RepresentationVector;
     typedef Vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    typedef Vector<uint8_t> InDegreesVector;
+    //typedef Vector<uint8_t> InDegreesVector;
     typedef Vector<Node*> GraphStructureVector;
     ModuleVector moduleVector;
     RepresentationVector representationVector;
     ModuleRepresentationVector moduleRepresentationRequiredVector;
     ModuleRepresentationVector moduleRepresentationUsedVector;
-    InDegreesVector inDegreesVector;
     GraphStructureVector graphStructureVector;
 
     // For topological sort
     typedef Vector<Node*> TopoQueue;
-    typedef Vector<TopoNode*> GraphOutput;
+    typedef Vector<Node*> GraphOutput;
     TopoQueue topoQueue;
     GraphOutput graphOutput;
     uint8_t errorValue;
@@ -277,6 +249,7 @@ class Graph
 
   private:
     void errorHandler();
+    void purgeEntries();
 
   protected:
     Graph();
