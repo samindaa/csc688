@@ -313,7 +313,7 @@ void Graph::topoSort()
   }
 
   // Purge entries
-   purgeEntries();
+  purgeEntries();
 }
 
 void Graph::graphOutputInit()
@@ -503,5 +503,12 @@ Graph& Graph::getInstance()
   if (!theInstance)
     theInstance = new Graph;
   return *theInstance;
+}
+
+void Graph::deleteInstance()
+{
+  if (theInstance)
+    delete theInstance;
+  theInstance = 0;
 }
 

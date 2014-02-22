@@ -235,6 +235,7 @@ class Graph
     uint8_t errorValue;
 
     static Graph& getInstance();
+    static void deleteInstance();
     void addModule(Node* theInstance);
     void providedRepresentation(const char* moduleName, Node* theInstance, void (*updateRepresentation)(Node* , Node* ));
     void requiredRepresentation(const char* moduleName, const char* representationName);
