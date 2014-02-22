@@ -237,9 +237,6 @@ void Graph::computeGraph()
 
 void Graph::topoSort()
 {
-  // Purge entries
-  purgeEntries();
-
   // Calculate in-degrees
   for (int i = 0; i < graphStructureVector.size(); i++)
   {
@@ -314,6 +311,9 @@ void Graph::topoSort()
     errorHandler();
 #endif
   }
+
+  // Purge entries
+   purgeEntries();
 }
 
 void Graph::graphOutputInit()
@@ -387,6 +387,8 @@ void Graph::purgeEntries()
   representationVector.purge();
   moduleRepresentationRequiredVector.purge();
   moduleRepresentationUsedVector.purge();
+  graphStructureVector.purge();
+  topoQueue.purge();
 }
 
 void Graph::stream()
