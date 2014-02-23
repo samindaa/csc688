@@ -23,6 +23,11 @@
 #define B2                      4.63e-09
 #define C2                      13.4
 
+TMP006Module::TMP006Module() :
+    i32IntegerPart(0), i32FractionPart(0)
+{
+}
+
 void TMP006Module::update(TMP006Representation& theTMP006Representation)
 {
 #if defined(ENERGIA)
@@ -93,35 +98,33 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  theTMP006Representation.i32IntegerPart = (int32_t) theTMP006Representation.fAmbient;
-  theTMP006Representation.i32FractionPart = (int32_t) (theTMP006Representation.fAmbient * 1000.0f);
-  theTMP006Representation.i32FractionPart = theTMP006Representation.i32FractionPart
-      - (theTMP006Representation.i32IntegerPart * 1000);
-  if (theTMP006Representation.i32FractionPart < 0)
+  i32IntegerPart = (int32_t) theTMP006Representation.fAmbient;
+  i32FractionPart = (int32_t) (theTMP006Representation.fAmbient * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
   {
-    theTMP006Representation.i32FractionPart *= -1;
+    i32FractionPart *= -1;
   }
   Serial.print("Ambient=");
-  Serial.print(theTMP006Representation.i32IntegerPart);
+  Serial.print(i32IntegerPart);
   Serial.print(".");
-  Serial.println(theTMP006Representation.i32FractionPart);
+  Serial.println(i32FractionPart);
 
   //
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  theTMP006Representation.i32IntegerPart = (int32_t) theTMP006Representation.fObject;
-  theTMP006Representation.i32FractionPart = (int32_t) (theTMP006Representation.fObject * 1000.0f);
-  theTMP006Representation.i32FractionPart = theTMP006Representation.i32FractionPart
-      - (theTMP006Representation.i32IntegerPart * 1000);
-  if (theTMP006Representation.i32FractionPart < 0)
+  i32IntegerPart = (int32_t) theTMP006Representation.fObject;
+  i32FractionPart = (int32_t) (theTMP006Representation.fObject * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
   {
-    theTMP006Representation.i32FractionPart *= -1;
+    i32FractionPart *= -1;
   }
   Serial.print("Object=");
-  Serial.print(theTMP006Representation.i32IntegerPart);
+  Serial.print(i32IntegerPart);
   Serial.print(".");
-  Serial.println(theTMP006Representation.i32FractionPart);
+  Serial.println(i32FractionPart);
 
 #endif
 }

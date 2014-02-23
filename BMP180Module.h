@@ -35,24 +35,16 @@ END_MODULE
 class BMP180Module: public BMP180ModuleBase
 {
   protected:
-    uint32_t calcB4, calcB7;              // but larger if there are too many..
+    int32_t i32IntegerPart;
+    int32_t i32FractionPart;
 
     class BMP180
     {
       public:
-        enum MODE
-        {
-          BMP180_C,
-          BMP180_F
-        };
         //
         // The I2C address of the BMP180.
         //
         uint8_t ui8Addr;
-
-        //
-        // Temperature units
-        uint8_t tunit;
 
         //
         // The AC1 calibration from the BMP180.
@@ -104,7 +96,15 @@ class BMP180Module: public BMP180ModuleBase
         //
         int16_t i16MD;
 
-        uint8_t oversampling;
+        //
+        // The sampling mode to be used by the BMP180.
+        //
+        uint8_t ui8Mode;
+
+        //
+        // The data buffer used for sending/receiving data to/from the BMP180.
+        //
+        uint8_t pui8Data[2];
     };
 
     BMP180 parameters;
@@ -119,8 +119,8 @@ class BMP180Module: public BMP180ModuleBase
     void calibration();
     void calculation(BMP180Representation& theBMP180Representation);
     // read 16-bits from I2C (signed and unsigned)
-    uint16_t I2CMRead(const uint8_t& addr);
-    uint16_t cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr);
+    void I2CMRead(const uint8_t& addr);
+    void cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr);
 };
 
 #endif /* BMP180MODULE_H_ */

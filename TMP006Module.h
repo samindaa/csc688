@@ -27,7 +27,11 @@ PROVIDES(TMP006Representation)
 END_MODULE
 class TMP006Module: public TMP006ModuleBase
 {
+  private:
+    int_fast32_t i32IntegerPart;
+    int_fast32_t i32FractionPart;
   public:
+    TMP006Module();
     void update(TMP006Representation& theTMP006Representation);
 
   private:

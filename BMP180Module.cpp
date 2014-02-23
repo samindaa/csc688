@@ -12,7 +12,7 @@
 #endif
 
 BMP180Module::BMP180Module() :
-    calcB4(0), calcB7(0)
+    i32IntegerPart(0), i32FractionPart(0)
 {
 
 }
@@ -24,8 +24,7 @@ BMP180Module::~BMP180Module()
 void BMP180Module::init()
 {
   parameters.ui8Addr = BMP180_I2C_ADDRESS;
-  parameters.tunit = BMP180::BMP180_C;
-  parameters.oversampling = 0;
+  parameters.ui8Mode = 0;
   calibration();
 }
 
@@ -33,32 +32,42 @@ void BMP180Module::update(BMP180Representation& theBMP180Representation)
 {
 #if defined(ENERGIA)
   // Temperature
-  theBMP180Representation.rawTemperature = cmdI2CMRead(
-      (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE), BMP180_O_OUT_MSB);
-#ifdef DEBUG_BMP180
-  Serial.print("UT=");
-  Serial.println(theBMP180Representation.rawTemperature);
-#endif
+  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE), BMP180_O_OUT_MSB);
   // Pressure
   // This is with no sampling
-  theBMP180Representation.rawPressure = cmdI2CMRead(
-      (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE | parameters.oversampling << 6),
-      BMP180_O_OUT_MSB);
-#ifdef DEBUG_BMP180
-  Serial.print("UP=");
-  Serial.println(theBMP180Representation.rawPressure);
-#endif
+  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE | parameters.ui8Mode),
+  BMP180_O_OUT_MSB);
   calculation(theBMP180Representation);             // run calculations for temperature and pressure
 
 #ifdef DEBUG_BMP180
   Serial.print("Temperature: ");
-  Serial.print(theBMP180Representation.temperature / 10);          // display temperature in Celsius
+  i32IntegerPart = (int32_t) theBMP180Representation.fTemperature;
+  i32FractionPart = (int32_t) (theBMP180Representation.fTemperature * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
+    i32FractionPart *= -1;
+  Serial.print(i32IntegerPart);
   Serial.print(".");
-  Serial.print(theBMP180Representation.temperature % 10);// display temperature in Celsius
+  Serial.print(i32FractionPart);
   Serial.println("C");
   Serial.print("Pressure:    ");
-  Serial.print((theBMP180Representation.pressure + 50) / 100);// display pressure in hPa
-  Serial.println("hPa");
+  i32IntegerPart = (int32_t) theBMP180Representation.fPressure;
+  i32FractionPart = (int32_t) (theBMP180Representation.fPressure * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
+    i32FractionPart *= -1;
+  Serial.print(i32IntegerPart);
+  Serial.print(".");
+  Serial.println(i32FractionPart);
+  Serial.print("Altitude: ");
+  i32IntegerPart = (int32_t) theBMP180Representation.fAltitude;
+  i32FractionPart = (int32_t) (theBMP180Representation.fAltitude * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
+    i32FractionPart *= -1;
+  Serial.print(i32IntegerPart);
+  Serial.print(".");
+  Serial.println(i32FractionPart);
 #endif
 
 #endif
@@ -68,19 +77,29 @@ void BMP180Module::update(BMP180Representation& theBMP180Representation)
 void BMP180Module::calibration()
 {
 #if defined(ENERGIA)
-  parameters.i16AC1 = I2CMRead(BMP180_O_AC1_MSB);
-  parameters.i16AC2 = I2CMRead(BMP180_O_AC2_MSB);
-  parameters.i16AC3 = I2CMRead(BMP180_O_AC3_MSB);
+  I2CMRead(BMP180_O_AC1_MSB);
+  parameters.i16AC1 = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_AC2_MSB);
+  parameters.i16AC2 = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_AC3_MSB);
+  parameters.i16AC3 = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
-  parameters.ui16AC4 = I2CMRead(BMP180_O_AC4_MSB);
-  parameters.ui16AC5 = I2CMRead(BMP180_O_AC5_MSB);
-  parameters.ui16AC6 = I2CMRead(BMP180_O_AC6_MSB);
+  I2CMRead(BMP180_O_AC4_MSB);
+  parameters.ui16AC4 = (uint16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_AC5_MSB);
+  parameters.ui16AC5 = (uint16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_AC6_MSB);
+  parameters.ui16AC6 = (uint16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
-  parameters.i16B1 = I2CMRead(BMP180_O_B1_MSB);
-  parameters.i16B2 = I2CMRead(BMP180_O_B2_MSB);
+  I2CMRead(BMP180_O_B1_MSB);
+  parameters.i16B1 = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_B2_MSB);
+  parameters.i16B2 = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
-  parameters.i16MC = I2CMRead(BMP180_O_MC_MSB);
-  parameters.i16MD = I2CMRead(BMP180_O_MD_MSB);
+  I2CMRead(BMP180_O_MC_MSB);
+  parameters.i16MC = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
+  I2CMRead(BMP180_O_MD_MSB);
+  parameters.i16MD = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
 #if defined(DEBUG_BMP180)
   Serial.print("i16AC1=");
@@ -109,7 +128,7 @@ void BMP180Module::calibration()
 }
 
 // read 16-bits from I2C
-uint16_t BMP180Module::I2CMRead(const uint8_t& addr)
+void BMP180Module::I2CMRead(const uint8_t& addr)
 {
 #if defined(ENERGIA)
   Wire.beginTransmission(parameters.ui8Addr);
@@ -117,137 +136,94 @@ uint16_t BMP180Module::I2CMRead(const uint8_t& addr)
   Wire.endTransmission(false);
   Wire.requestFrom(parameters.ui8Addr, (uint8_t) 2);
   while (Wire.available() == 0)
-  ;
-  return (Wire.read() << 8 | Wire.read());
-#else
-  return 0;
+  {
+    ;
+  }
+  parameters.pui8Data[0] = Wire.read();
+  parameters.pui8Data[1] = Wire.read();
 #endif
 }
 
-uint16_t BMP180Module::cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr)
+void BMP180Module::cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr)
 {
 #if defined(ENERGIA)
   Wire.beginTransmission(parameters.ui8Addr);
   Wire.write(BMP180_O_CTRL_MEAS);
   Wire.write(cmd);
   Wire.endTransmission();
-  return I2CMRead(addr);
-#else
-  return 0;
+  I2CMRead(addr);
 #endif
 }
 
 void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
 {
 #if defined(ENERGIA)
-  // calculating temperature
-  int32_t calcX1 =
-  (((int32_t) theBMP180Representation.rawTemperature - (int32_t) parameters.ui16AC6)
-      * (int32_t) parameters.ui16AC5) >> 15;
-  int32_t calcX2 = ((int32_t) parameters.i16MC << 11) / (calcX1 + parameters.i16MD);
-  int32_t calcB5 = calcX1 + calcX2;
+  float fUT, fX1, fX2, fB5;
 
-  if (parameters.tunit == BMP180::BMP180_F)
-  theBMP180Representation.temperature = (calcB5 * 9 / 5 + 5128) >> 4;// calculate temperature in 0.1 F
-  else
-  theBMP180Representation.temperature = (calcB5 + 8) >> 4;// calculate temperature in 0.1 C
+  //
+  // Get the uncompensated temperature.
+  //
+  fUT = (float) (uint16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
-#ifdef DEBUG_BMP180
-  Serial.print("X1=");
-  Serial.println(calcX1);
-  Serial.print("X2=");
-  Serial.println(calcX2);
-  Serial.print("B5=");
-  Serial.println(calcB5);
-  Serial.print("T=");
-  Serial.println(theBMP180Representation.temperature);
-#endif
+  //
+  // Calculate the true temperature.
+  //
+  fX1 = ((fUT - (float) parameters.ui16AC6) * (float) parameters.ui16AC5) / 32768.f;
+  fX2 = ((float) parameters.i16MC * 2048.f) / (fX1 + (float) parameters.i16MD);
+  fB5 = fX1 + fX2;
+  theBMP180Representation.fTemperature = fB5 / 160.f;
 
-  if (parameters.oversampling >= 4)
-  return;    // done if in temperature only mode
+  if (parameters.ui8Mode >= 4)
+    return;    // done if in temperature only mode
 
   // calculating pressure
-  int32_t calcB6 = calcB5 - 4000;
-  calcX1 = ((int32_t) parameters.i16B2 * (calcB6 * calcB6 >> 12)) >> 11;
-  calcX2 = (int32_t) parameters.i16AC2 * calcB6 >> 11;
-  int32_t calcX3 = calcX1 + calcX2;
-  int32_t calcB3 = ((((int32_t) parameters.i16AC1 * 4 + calcX3) << parameters.oversampling) + 2)
-  >> 2;
-#ifdef DEBUG_BMP180
-  Serial.print("B6=");
-  Serial.println(calcB6);
-  Serial.print("X1=");
-  Serial.println(calcX1);
-  Serial.print("X2=");
-  Serial.println(calcX2);
-  Serial.print("X3=");
-  Serial.println(calcX3);
-  Serial.print("B3=");
-  Serial.println(calcB3);
-#endif
-  calcX1 = (int32_t) parameters.i16AC3 * calcB6 >> 13;
-  calcX2 = ((int32_t) parameters.i16B1 * (calcB6 * calcB6 >> 12)) >> 16;
-  calcX3 = ((calcX1 + calcX2) + 2) >> 2;
-  calcB4 = (int32_t) parameters.ui16AC4 * (uint32_t) (calcX3 + 32768) >> 15;
-  calcB7 = ((uint32_t) theBMP180Representation.rawPressure - calcB3)
-  * (50000 >> parameters.oversampling);
-  if (calcB7 < 0x80000000)
-  theBMP180Representation.pressure = ((calcB7 * 2) / calcB4);
-  else
-  theBMP180Representation.pressure = (calcB7 / calcB4) * 2;
-#ifdef DEBUG_BMP180
-  Serial.print("X1=");
-  Serial.println(calcX1);
-  Serial.print("X2=");
-  Serial.println(calcX2);
-  Serial.print("X3=");
-  Serial.println(calcX3);
-  Serial.print("B4=");
-  Serial.println(calcB4);
-  Serial.print("B7=");
-  Serial.println(calcB7);
-  Serial.print("p=");
-  Serial.println(theBMP180Representation.pressure);
-#endif
-  calcX1 = (theBMP180Representation.pressure >> 8) * (theBMP180Representation.pressure >> 8);
-#ifdef DEBUG_BMP180
-  Serial.print("X1=");
-  Serial.println(calcX1);
-#endif
-  calcX1 = (calcX1 * 3038) >> 16;
-  calcX2 = (-7357 * theBMP180Representation.pressure) >> 16;
-  theBMP180Representation.pressure = theBMP180Representation.pressure
-  + ((calcX1 + calcX2 + 3791) >> 4);
-#ifdef DEBUG_BMP180
-  Serial.print("X1=");
-  Serial.println(calcX1);
-  Serial.print("X2=");
-  Serial.println(calcX2);
-  Serial.print("p=");
-  Serial.println(theBMP180Representation.pressure);
-#endif
-  theBMP180Representation.fAltitude = 44330.0f * (1.0f - powf(theBMP180Representation.pressure / 101325.0f,
-          1.0f / 5.255f)) / 100.0f;
 
-#ifdef DEBUG_BMP180
+  float fUP, fX3, fB3, fB4, fB6, fB7, fP;
+  int_fast8_t i8Oss;
+
   //
-  // Convert the floats to an integer part and fraction part for easy
-  // print.
+  // Get the oversampling ratio.
   //
-  int32_t i32IntegerPart = (int32_t) theBMP180Representation.fAltitude;
-  int32_t i32FractionPart = (int32_t) (theBMP180Representation.fAltitude * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if(i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
+  i8Oss = parameters.ui8Mode >> BMP180_CTRL_MEAS_OSS_S;
 
-  Serial.print("Altitude: ");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  //
+  // Retrieve the uncompensated pressure.
+  //
+  fUP = ((float) (int32_t) ((parameters.pui8Data[0] << 16) | (parameters.pui8Data[1] << 8))
+      / (1 << (8 - i8Oss)));
 
-#endif
+  //
+  // Calculate the true temperature.
+  //
+  fX1 = ((fUT - (float) parameters.ui16AC6) * (float) parameters.ui16AC5) / 32768;
+  fX2 = ((float) parameters.i16MC * 2048) / (fX1 + (float) parameters.i16MD);
+  fB5 = fX1 + fX2;
+
+  //
+  // Calculate the true pressure.
+  //
+  fB6 = fB5 - 4000;
+  fX1 = ((float) parameters.i16B2 * ((fB6 * fB6) / 4096)) / 2048;
+  fX2 = ((float) parameters.i16AC2 * fB6) / 2048;
+  fX3 = fX1 + fX2;
+  fB3 = ((((float) parameters.i16AC1 * 4) + fX3) * (1 << i8Oss)) / 4;
+  fX1 = ((float) parameters.i16AC3 * fB6) / 8192;
+  fX2 = ((float) parameters.i16B1 * ((fB6 * fB6) / 4096)) / 65536;
+  fX3 = (fX1 + fX2) / 4;
+  fB4 = (float) parameters.ui16AC4 * ((fX3 / 32768) + 1);
+  fB7 = (fUP - fB3) * (50000 >> i8Oss);
+  fP = (fB7 * 2) / fB4;
+  fX1 = (fP / 256) * (fP / 256);
+  fX1 = (fX1 * 3038) / 65536;
+  fX2 = (fP * -7357) / 65536;
+  fP += (fX1 + fX2 + 3791) / 16;
+  theBMP180Representation.fPressure = fP;
+
+  //
+  // Calculate the altitude.
+  //
+  theBMP180Representation.fAltitude = 44330.0f
+      * (1.0f - powf(theBMP180Representation.fPressure / 101325.0f, 1.0f / 5.255f));
 
 #endif
 }

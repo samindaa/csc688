@@ -14,14 +14,10 @@ REPRESENTATION(BMP180Representation)
 class BMP180Representation: public BMP180RepresentationBase
 {
   public:
-    int16_t temperature;      // last calculated temperature in 0.1 C (or F)
-    int32_t pressure;         // last calculated pressure in Pa
-    float fAltitude;
-    uint16_t rawTemperature;  // last measured temperature
-    uint32_t rawPressure;     // last measured pressure
+    float fTemperature, fPressure, fAltitude;
 
     BMP180Representation() :
-        temperature(0), pressure(0), fAltitude(0), rawTemperature(0), rawPressure(0)
+        fTemperature(0), fPressure(0), fAltitude(0)
     {
     }
 };
