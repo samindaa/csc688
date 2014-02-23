@@ -31,12 +31,6 @@ void BMP180Module::init()
 void BMP180Module::update(BMP180Representation& theBMP180Representation)
 {
 #if defined(ENERGIA)
-  // Temperature
-  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE), BMP180_O_OUT_MSB);
-  // Pressure
-  // This is with no sampling
-  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE | parameters.ui8Mode),
-  BMP180_O_OUT_MSB);
   calculation(theBMP180Representation);             // run calculations for temperature and pressure
 
 #ifdef DEBUG_BMP180
@@ -128,36 +122,40 @@ void BMP180Module::calibration()
 }
 
 // read 16-bits from I2C
-void BMP180Module::I2CMRead(const uint8_t& addr)
+void BMP180Module::I2CMRead(const uint8_t& addr, const uint8_t& bytes)
 {
 #if defined(ENERGIA)
   Wire.beginTransmission(parameters.ui8Addr);
   Wire.write(addr);
   Wire.endTransmission(false);
-  Wire.requestFrom(parameters.ui8Addr, (uint8_t) 2);
+  Wire.requestFrom(parameters.ui8Addr, bytes);
   while (Wire.available() == 0)
-  {
     ;
-  }
   parameters.pui8Data[0] = Wire.read();
   parameters.pui8Data[1] = Wire.read();
+  if (bytes == 3)
+    parameters.pui8Data[2] = Wire.read();
 #endif
 }
 
-void BMP180Module::cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr)
+void BMP180Module::cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr, const uint8_t& bytes)
 {
 #if defined(ENERGIA)
   Wire.beginTransmission(parameters.ui8Addr);
   Wire.write(BMP180_O_CTRL_MEAS);
   Wire.write(cmd);
   Wire.endTransmission();
-  I2CMRead(addr);
+  delay(5); //<< To ready data (Read manufacturer data sheet: TODO)
+  I2CMRead(addr, bytes);
 #endif
 }
 
 void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
 {
 #if defined(ENERGIA)
+  // Temperature
+  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE), BMP180_O_OUT_MSB, 2);
+
   float fUT, fX1, fX2, fB5;
 
   //
@@ -173,15 +171,18 @@ void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
   fB5 = fX1 + fX2;
   theBMP180Representation.fTemperature = fB5 / 160.f;
 
-  if (parameters.ui8Mode >= 4)
-    return;    // done if in temperature only mode
-
-  // calculating pressure
+  // This is with no sampling
+  cmdI2CMRead((BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE | parameters.ui8Mode),
+  BMP180_O_OUT_MSB, 3);
 
   float fUP, fX3, fB3, fB4, fB6, fB7, fP;
   int_fast8_t i8Oss;
 
-  //
+  uint32_t rawPressure = (int32_t) ((parameters.pui8Data[0] << 16) | (parameters.pui8Data[1] << 8)
+      | (parameters.pui8Data[2] & BMP180_OUT_XLSB_M));
+  Serial.print("rawPressure:");
+  Serial.println(rawPressure);
+
   // Get the oversampling ratio.
   //
   i8Oss = parameters.ui8Mode >> BMP180_CTRL_MEAS_OSS_S;
@@ -189,14 +190,14 @@ void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
   //
   // Retrieve the uncompensated pressure.
   //
-  fUP = ((float) (int32_t) ((parameters.pui8Data[0] << 16) | (parameters.pui8Data[1] << 8))
-      / (1 << (8 - i8Oss)));
+  fUP = ((float) (int32_t) ((parameters.pui8Data[0] << 16) | (parameters.pui8Data[1] << 8)
+      | (parameters.pui8Data[2] & BMP180_OUT_XLSB_M)) / (1 << (8 - i8Oss)));
 
   //
   // Calculate the true temperature.
   //
-  fX1 = ((fUT - (float) parameters.ui16AC6) * (float) parameters.ui16AC5) / 32768;
-  fX2 = ((float) parameters.i16MC * 2048) / (fX1 + (float) parameters.i16MD);
+  fX1 = ((fUT - (float) parameters.ui16AC6) * (float) parameters.ui16AC5) / 32768.f;
+  fX2 = ((float) parameters.i16MC * 2048.f) / (fX1 + (float) parameters.i16MD);
   fB5 = fX1 + fX2;
 
   //

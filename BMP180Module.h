@@ -104,7 +104,7 @@ class BMP180Module: public BMP180ModuleBase
         //
         // The data buffer used for sending/receiving data to/from the BMP180.
         //
-        uint8_t pui8Data[2];
+        uint8_t pui8Data[3];
     };
 
     BMP180 parameters;
@@ -119,8 +119,8 @@ class BMP180Module: public BMP180ModuleBase
     void calibration();
     void calculation(BMP180Representation& theBMP180Representation);
     // read 16-bits from I2C (signed and unsigned)
-    void I2CMRead(const uint8_t& addr);
-    void cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr);
+    void I2CMRead(const uint8_t& addr, const uint8_t& bytes = 2);
+    void cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr, const uint8_t& bytes);
 };
 
 #endif /* BMP180MODULE_H_ */

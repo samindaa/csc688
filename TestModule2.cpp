@@ -11,9 +11,9 @@ void TestModule2::execute()
 {
 #if defined(ENERGIA)
   if (theTestRepresentation1->blinkslow)
-  blinkslow();
+    blinkslow();
   else if (theTestRepresentation1->blinkfast)
-  blinkfast();
+    blinkfast();
   else if (theTestRepresentation2->ulTempValueC > 0)
   {
     // blink green led
@@ -24,15 +24,12 @@ void TestModule2::execute()
   }
   else
   {
-    uint8_t state = HIGH;
-    for (int i = 0; i < 10; i++)
-    {
-      digitalWrite(RED_LED, state);
-      digitalWrite(RED_LED, state);
-      digitalWrite(GREEN_LED, state);
-      delay(250);
-      state ^= HIGH;
-    }
+    static uint8_t state = HIGH;
+    digitalWrite(RED_LED, state);
+    digitalWrite(GREEN_LED, state);
+    digitalWrite(BLUE_LED, state);
+    delay(250);
+    state ^= HIGH;
   }
 #endif
 

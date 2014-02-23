@@ -14,14 +14,14 @@ void LaunchPadModule::init()
 {
 #if defined(ENERGIA)
   // Serial port
-  Serial.begin(9600);
+  Serial.begin(115200); //9600
   // LED
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
   pinMode(BLUE_LED, OUTPUT);
-  digitalWrite(RED_LED, LOW);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(RED_LED, HIGH);
+  digitalWrite(GREEN_LED, HIGH);
+  digitalWrite(BLUE_LED, HIGH);
   // Buttons
   pinMode(PUSH1, INPUT_PULLUP);// left - note _PULLUP
   pinMode(PUSH2, INPUT_PULLUP);// right - note _PULLUP
