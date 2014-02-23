@@ -226,6 +226,29 @@ void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
   Serial.print("p=");
   Serial.println(theBMP180Representation.pressure);
 #endif
+  theBMP180Representation.fAltitude = 44330.0f * (1.0f - powf(theBMP180Representation.pressure / 101325.0f,
+          1.0f / 5.255f)) / 100.0f;
+
+#ifdef DEBUG_BMP180
+  //
+  // Convert the floats to an integer part and fraction part for easy
+  // print.
+  //
+  int32_t i32IntegerPart = (int32_t) theBMP180Representation.fAltitude;
+  int32_t i32FractionPart = (int32_t) (theBMP180Representation.fAltitude * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if(i32FractionPart < 0)
+  {
+    i32FractionPart *= -1;
+  }
+
+  Serial.print("Altitude: ");
+  Serial.print(i32IntegerPart);
+  Serial.print(".");
+  Serial.println(i32FractionPart);
+
+#endif
+
 #endif
 }
 
