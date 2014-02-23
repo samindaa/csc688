@@ -11,6 +11,7 @@
 #include "Template.h"
 #include "LaunchPadRepresentation.h"
 #include "TMP006Representation.h"
+#include "hw_tmp006.h"
 
 
 //*****************************************************************************
@@ -19,12 +20,6 @@
 //
 //*****************************************************************************
 #define TMP006_I2C_ADDRESS      0x41
-
-#define TMP006_O_DEV_ID         0xFF        // TMP006 Device Identification
-
-#define TMP006_O_VOBJECT        0x00        // Raw object voltage measurement
-
-#define TMP006_O_TAMBIENT       0x01        // Die temperature of the TMP006
 
 MODULE(TMP006Module)
 REQUIRES(LaunchPadRepresentation)

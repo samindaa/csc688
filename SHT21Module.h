@@ -9,6 +9,7 @@
 #define SHT21MODULE_H_
 
 #include "Template.h"
+#include "hw_sht21.h"
 
 MODULE(SHT21Module)
 END_MODULE

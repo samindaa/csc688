@@ -12,9 +12,9 @@
 #endif
 
 BMP180Module::BMP180Module() :
-    oversampling(0), eocpin(0), tempunit(BMP180_C), i2caddress(BMP180_I2C_ADDR), calcB4(0), calcB7(
-        0)
+    calcB4(0), calcB7(0)
 {
+
 }
 
 BMP180Module::~BMP180Module()
@@ -23,174 +23,134 @@ BMP180Module::~BMP180Module()
 
 void BMP180Module::init()
 {
-  oversampling = 0;
-  eocpin = 0;
-  tempunit = BMP180_C;
-  begin();
+  parameters.ui8Addr = BMP180_I2C_ADDRESS;
+  parameters.tunit = BMP180::BMP180_C;
+  parameters.oversampling = 0;
+  calibration();
 }
 
 void BMP180Module::update(BMP180Representation& theBMP180Representation)
 {
 #if defined(ENERGIA)
-  refresh(theBMP180Representation);                    // read current sensor data
-  calculate(theBMP180Representation);               // run calculations for temperature and pressure
-  Serial.print("Temperature: ");
-  Serial.print(theBMP180Representation.temperature / 10);  // display temperature in Celsius
-  Serial.print(".");
-  Serial.print(theBMP180Representation.temperature % 10);  // display temperature in Celsius
-  Serial.println("C");
-  Serial.print("Pressure:    ");
-  Serial.print((theBMP180Representation.pressure + 50) / 100);   // display pressure in hPa
-  Serial.println("hPa");
-#endif
-}
-
-// call once to initialize, reads sensor calibration data
-void BMP180Module::begin()
-{
-#if defined(ENERGIA)
-#ifdef DEBUG_BMP180
-  // verify that we're actually talking to a BMP180 sensor
-  if(read8(BMP180_REG_ID) != BMP180_CHIP_ID)
-  {
-    Serial.println("BMP180 device not found");
-    return;
-  }
-#endif
-
-  // read calibration data from sensor EEPROM
-  int16_t *calarray = (int16_t*) &cal;
-  uint8_t addr = 0;
-  while (addr < 11)
-  {
-    calarray[addr] = read16(BMP180_REG_CAL + (addr * 2));
-    addr++;
-  }
-
-#ifdef DEBUG_BMP180
-  Serial.print("AC1=");
-  Serial.println(cal.ac1);
-  Serial.print("AC2=");
-  Serial.println(cal.ac2);
-  Serial.print("AC3=");
-  Serial.println(cal.ac3);
-  Serial.print("AC4=");
-  Serial.println(cal.ac4);
-  Serial.print("AC5=");
-  Serial.println(cal.ac5);
-  Serial.print("AC6=");
-  Serial.println(cal.ac6);
-  Serial.print("B1=");
-  Serial.println(cal.b1);
-  Serial.print("B2=");
-  Serial.println(cal.b2);
-  Serial.print("MB=");
-  Serial.println(cal.mb);
-  Serial.print("MC=");
-  Serial.println(cal.mc);
-  Serial.print("MD=");
-  Serial.println(cal.md);
-#endif
-
-  if (eocpin)
-  {                         // if EOC pin is configured to detect end of conversion..
-    pinMode(eocpin, INPUT);            // setup EOC pin as digital input
-  }
-
-  // done with initialization
-}
-
-// reading fresh raw data from sensor
-void BMP180Module::refresh(BMP180Representation& theBMP180Representation)
-{
-#ifdef DEBUG_BMP180
-  Serial.println("Reading temperature..");
-#endif
-
-  sendCmd(BMP180_CMD_T);                // send command to read temperature
-
-  if (eocpin)
-  {                            // if EOC pin is configured..
-    while (digitalRead(eocpin) == LOW)
-      ;      // wait for end of conversion
-  }
-  else
-  {                                // if not..
-    delay(5);                             // wait 5ms for data to be ready
-  }
-
-  theBMP180Representation.rawTemperature = read16(BMP180_REG_ADC);    // read raw temperature data
-
+  // Temperature
+  theBMP180Representation.rawTemperature = cmdI2CMRead(
+      (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_TEMPERATURE), BMP180_O_OUT_MSB);
 #ifdef DEBUG_BMP180
   Serial.print("UT=");
   Serial.println(theBMP180Representation.rawTemperature);
 #endif
-
-  if (oversampling >= 4)
-    return;            // done if in temperature only mode
-
-#ifdef DEBUG_BMP180
-  Serial.println("Reading pressure..");
-#endif
-
-  sendCmd(BMP180_CMD_P | (oversampling << 6)); // send command to read pressure, incl. oversampling mode
-
-  if (eocpin)
-  {                            // if EOC pin is configured..
-    while (digitalRead(eocpin) == LOW)
-      ;      // wait for end of conversion
-  }
-  else
-  {                                // if not..
-    if (oversampling == 0)
-      delay(5);       // delay for conversion to complete
-    else if (oversampling == 1)
-      delay(8);  //   using maximum conversion times
-    else if (oversampling == 2)
-      delay(14); //   depending on level of oversampling
-    else if (oversampling == 3)
-      delay(26);
-  }
-
-  if (oversampling == 0)
-  {                    // if no oversampling..
-    theBMP180Representation.rawPressure = read16(BMP180_REG_ADC);  // read 16 bit raw pressure
-  }
-  else
-  {                                   // if there is oversampling read more bits
-    theBMP180Representation.rawPressure = (((uint32_t) read16(BMP180_REG_ADC) << 8)
-        | read8(BMP180_REG_ADC + 2)) >> (8 - oversampling);
-  }
-
+  // Pressure
+  // This is with no sampling
+  theBMP180Representation.rawPressure = cmdI2CMRead(
+      (BMP180_CTRL_MEAS_SCO | BMP180_CTRL_MEAS_PRESSURE | parameters.oversampling << 6),
+      BMP180_O_OUT_MSB);
 #ifdef DEBUG_BMP180
   Serial.print("UP=");
   Serial.println(theBMP180Representation.rawPressure);
 #endif
+  calculation(theBMP180Representation);             // run calculations for temperature and pressure
+
+#ifdef DEBUG_BMP180
+  Serial.print("Temperature: ");
+  Serial.print(theBMP180Representation.temperature / 10);          // display temperature in Celsius
+  Serial.print(".");
+  Serial.print(theBMP180Representation.temperature % 10);// display temperature in Celsius
+  Serial.println("C");
+  Serial.print("Pressure:    ");
+  Serial.print((theBMP180Representation.pressure + 50) / 100);// display pressure in hPa
+  Serial.println("hPa");
 #endif
-  // done refreshing raw data
+
+#endif
+
 }
-// calculating temperature and pressure from raw data
-void BMP180Module::calculate(BMP180Representation& theBMP180Representation)
+
+void BMP180Module::calibration()
 {
 #if defined(ENERGIA)
-#ifdef DEBUG_BMP180
-  Serial.println("Calculating temperature in 0.1 Celcius..");
+  parameters.i16AC1 = I2CMRead(BMP180_O_AC1_MSB);
+  parameters.i16AC2 = I2CMRead(BMP180_O_AC2_MSB);
+  parameters.i16AC3 = I2CMRead(BMP180_O_AC3_MSB);
+
+  parameters.ui16AC4 = I2CMRead(BMP180_O_AC4_MSB);
+  parameters.ui16AC5 = I2CMRead(BMP180_O_AC5_MSB);
+  parameters.ui16AC6 = I2CMRead(BMP180_O_AC6_MSB);
+
+  parameters.i16B1 = I2CMRead(BMP180_O_B1_MSB);
+  parameters.i16B2 = I2CMRead(BMP180_O_B2_MSB);
+
+  parameters.i16MC = I2CMRead(BMP180_O_MC_MSB);
+  parameters.i16MD = I2CMRead(BMP180_O_MD_MSB);
+
+#if defined(DEBUG_BMP180)
+  Serial.print("i16AC1=");
+  Serial.println(parameters.i16AC1);
+  Serial.print("i16AC2=");
+  Serial.println(parameters.i16AC2);
+  Serial.print("i16AC3=");
+  Serial.println(parameters.i16AC3);
+  Serial.print("ui16AC4=");
+  Serial.println(parameters.ui16AC4);
+  Serial.print("ui16AC5=");
+  Serial.println(parameters.ui16AC5);
+  Serial.print("ui16AC6=");
+  Serial.println(parameters.ui16AC6);
+  Serial.print("i16B1=");
+  Serial.println(parameters.i16B1);
+  Serial.print("i16B2=");
+  Serial.println(parameters.i16B2);
+  Serial.print("i16MC=");
+  Serial.println(parameters.i16MC);
+  Serial.print("i16MD=");
+  Serial.println(parameters.i16MD);
 #endif
 
+#endif
+}
+
+// read 16-bits from I2C
+uint16_t BMP180Module::I2CMRead(const uint8_t& addr)
+{
+#if defined(ENERGIA)
+  Wire.beginTransmission(parameters.ui8Addr);
+  Wire.write(addr);
+  Wire.endTransmission(false);
+  Wire.requestFrom(parameters.ui8Addr, (uint8_t) 2);
+  while (Wire.available() == 0)
+  ;
+  return (Wire.read() << 8 | Wire.read());
+#else
+  return 0;
+#endif
+}
+
+uint16_t BMP180Module::cmdI2CMRead(const uint8_t& cmd, const uint8_t& addr)
+{
+#if defined(ENERGIA)
+  Wire.beginTransmission(parameters.ui8Addr);
+  Wire.write(BMP180_O_CTRL_MEAS);
+  Wire.write(cmd);
+  Wire.endTransmission();
+  return I2CMRead(addr);
+#else
+  return 0;
+#endif
+}
+
+void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
+{
+#if defined(ENERGIA)
   // calculating temperature
-  int32_t calcX1 = (((int32_t) theBMP180Representation.rawTemperature - (int32_t) cal.ac6)
-      * (int32_t) cal.ac5) >> 15;
-  int32_t calcX2 = ((int32_t) cal.mc << 11) / (calcX1 + cal.md);
+  int32_t calcX1 =
+  (((int32_t) theBMP180Representation.rawTemperature - (int32_t) parameters.ui16AC6)
+      * (int32_t) parameters.ui16AC5) >> 15;
+  int32_t calcX2 = ((int32_t) parameters.i16MC << 11) / (calcX1 + parameters.i16MD);
   int32_t calcB5 = calcX1 + calcX2;
 
-  if (tempunit == BMP180_F)
-  {
-    theBMP180Representation.temperature = (calcB5 * 9 / 5 + 5128) >> 4; // calculate temperature in 0.1 F
-  }
+  if (parameters.tunit == BMP180::BMP180_F)
+  theBMP180Representation.temperature = (calcB5 * 9 / 5 + 5128) >> 4;// calculate temperature in 0.1 F
   else
-  {
-    theBMP180Representation.temperature = (calcB5 + 8) >> 4;      // calculate temperature in 0.1 C
-  }
+  theBMP180Representation.temperature = (calcB5 + 8) >> 4;// calculate temperature in 0.1 C
 
 #ifdef DEBUG_BMP180
   Serial.print("X1=");
@@ -203,19 +163,16 @@ void BMP180Module::calculate(BMP180Representation& theBMP180Representation)
   Serial.println(theBMP180Representation.temperature);
 #endif
 
-  if (oversampling >= 4)
-    return;    // done if in temperature only mode
-
-#ifdef DEBUG_BMP180
-  Serial.println("Calculating pressure in Pascal..");
-#endif
+  if (parameters.oversampling >= 4)
+  return;    // done if in temperature only mode
 
   // calculating pressure
   int32_t calcB6 = calcB5 - 4000;
-  calcX1 = ((int32_t) cal.b2 * (calcB6 * calcB6 >> 12)) >> 11;
-  calcX2 = (int32_t) cal.ac2 * calcB6 >> 11;
+  calcX1 = ((int32_t) parameters.i16B2 * (calcB6 * calcB6 >> 12)) >> 11;
+  calcX2 = (int32_t) parameters.i16AC2 * calcB6 >> 11;
   int32_t calcX3 = calcX1 + calcX2;
-  int32_t calcB3 = ((((int32_t) cal.ac1 * 4 + calcX3) << oversampling) + 2) >> 2;
+  int32_t calcB3 = ((((int32_t) parameters.i16AC1 * 4 + calcX3) << parameters.oversampling) + 2)
+  >> 2;
 #ifdef DEBUG_BMP180
   Serial.print("B6=");
   Serial.println(calcB6);
@@ -228,15 +185,16 @@ void BMP180Module::calculate(BMP180Representation& theBMP180Representation)
   Serial.print("B3=");
   Serial.println(calcB3);
 #endif
-  calcX1 = (int32_t) cal.ac3 * calcB6 >> 13;
-  calcX2 = ((int32_t) cal.b1 * (calcB6 * calcB6 >> 12)) >> 16;
+  calcX1 = (int32_t) parameters.i16AC3 * calcB6 >> 13;
+  calcX2 = ((int32_t) parameters.i16B1 * (calcB6 * calcB6 >> 12)) >> 16;
   calcX3 = ((calcX1 + calcX2) + 2) >> 2;
-  calcB4 = (int32_t) cal.ac4 * (uint32_t) (calcX3 + 32768) >> 15;
-  calcB7 = ((uint32_t) theBMP180Representation.rawPressure - calcB3) * (50000 >> oversampling);
+  calcB4 = (int32_t) parameters.ui16AC4 * (uint32_t) (calcX3 + 32768) >> 15;
+  calcB7 = ((uint32_t) theBMP180Representation.rawPressure - calcB3)
+  * (50000 >> parameters.oversampling);
   if (calcB7 < 0x80000000)
-    theBMP180Representation.pressure = ((calcB7 * 2) / calcB4);
+  theBMP180Representation.pressure = ((calcB7 * 2) / calcB4);
   else
-    theBMP180Representation.pressure = (calcB7 / calcB4) * 2;
+  theBMP180Representation.pressure = (calcB7 / calcB4) * 2;
 #ifdef DEBUG_BMP180
   Serial.print("X1=");
   Serial.println(calcX1);
@@ -259,7 +217,7 @@ void BMP180Module::calculate(BMP180Representation& theBMP180Representation)
   calcX1 = (calcX1 * 3038) >> 16;
   calcX2 = (-7357 * theBMP180Representation.pressure) >> 16;
   theBMP180Representation.pressure = theBMP180Representation.pressure
-      + ((calcX1 + calcX2 + 3791) >> 4);
+  + ((calcX1 + calcX2 + 3791) >> 4);
 #ifdef DEBUG_BMP180
   Serial.print("X1=");
   Serial.println(calcX1);
@@ -268,46 +226,6 @@ void BMP180Module::calculate(BMP180Representation& theBMP180Representation)
   Serial.print("p=");
   Serial.println(theBMP180Representation.pressure);
 #endif
-#endif
-  // done with calculations
-}
-
-// send command to BMP180
-void BMP180Module::sendCmd(uint8_t cmd)
-{
-#if defined(ENERGIA)
-  Wire.beginTransmission(i2caddress);
-  Wire.write(byte(BMP180_REG_CTRL));
-  Wire.write(byte(cmd));
-  Wire.endTransmission();
-#endif
-}
-// read 8 bits from I2C
-uint8_t BMP180Module::read8(uint8_t addr)
-{
-#if defined(ENERGIA)
-  Wire.beginTransmission(i2caddress);
-  Wire.write(addr);
-  Wire.endTransmission(false);
-
-  Wire.requestFrom(i2caddress, (uint8_t) 1);    // need to cast int to avoid compiler warnings
-  return Wire.read();
-#else
-  return 0;
-#endif
-}
-// read 16 bits from I2C
-uint16_t BMP180Module::read16(uint8_t addr)
-{
-#if defined(ENERGIA)
-  Wire.beginTransmission(i2caddress);
-  Wire.write(addr);
-  Wire.endTransmission(false);
-
-  Wire.requestFrom(i2caddress, (uint8_t) 2);    // need to cast int to avoid compiler warnings
-  return (Wire.read() << 8 | Wire.read());
-#else
-  return 0;
 #endif
 }
 

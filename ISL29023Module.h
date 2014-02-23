@@ -11,6 +11,7 @@
 #include "Template.h"
 #include "LaunchPadRepresentation.h"
 #include "ISL29023Representation.h"
+#include "hw_isl29023.h"
 
 //*****************************************************************************
 //
@@ -19,25 +20,6 @@
 //*****************************************************************************
 #define ISL29023_I2C_ADDRESS    0x44
 
-#define ISL29023_CMD_II_ADC_RES_16                                            \
-                                0x00        // 16 bit resolution
-#define ISL29023_CMD_II_ADC_RES_12                                            \
-                                0x04        // 12 bit resolution
-#define ISL29023_CMD_II_ADC_RES_8                                             \
-                                0x08        // 8 bit resolution
-#define ISL29023_CMD_II_ADC_RES_4                                             \
-                                0x0C        // 4 bit resolution
-
-#define ISL29023_CMD_II_RANGE_1K                                              \
-                                0x00        // 1000 lux range
-#define ISL29023_CMD_II_RANGE_4K                                              \
-                                0x01        // 4000 lux range
-#define ISL29023_CMD_II_RANGE_16K                                             \
-                                0x02        // 16000 lux range
-#define ISL29023_CMD_II_RANGE_64K                                             \
-                                0x03        // 64000 lux range
-
-#define ISL29023_CMD_II_RANGE_S 0
 
 MODULE(ISL29023Module)
   REQUIRES(LaunchPadRepresentation)

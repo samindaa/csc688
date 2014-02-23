@@ -19,6 +19,10 @@ class BMP180Representation: public BMP180RepresentationBase
     uint16_t rawTemperature;  // last measured temperature
     uint32_t rawPressure;     // last measured pressure
 
+    float fTemperature, fPressure, fAltitude;
+    int32_t i32IntegerPart;
+    int32_t i32FractionPart;
+
     BMP180Representation() :
         temperature(0), pressure(0), rawTemperature(0), rawPressure(0)
     {
