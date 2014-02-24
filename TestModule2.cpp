@@ -18,6 +18,7 @@ void TestModule2::execute()
   {
     // blink green led
     static int toggle = HIGH;
+    digitalWrite(RED_LED, toggle);
     digitalWrite(GREEN_LED, toggle);
     toggle ^= HIGH;
     delay(250);

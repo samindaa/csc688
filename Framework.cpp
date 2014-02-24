@@ -24,8 +24,6 @@ Graph::Graph() :
 
 Graph::~Graph()
 {
-  // Purge entries
-  purgeEntries();
   graphOutput.purge();
 }
 
@@ -87,28 +85,32 @@ void Graph::usedRepresentation(const char* moduleName, const char* representatio
   moduleRepresentationUsedVector.push_back(newModuleRepresentationEntry);
 }
 
+/**
+ * This is called at most once per required representation per module.
+ */
 Node* Graph::getRepresentation(const char* representationName)
 {
-  for (int iter = 0; iter < representationVector.size(); iter++)
+  for (int iter = 0; iter < graphOutput.size(); iter++)
   {
-    Graph::RepresentationEntry* representationEntry = representationVector[iter];
-    if (strcmp(representationEntry->representationNode->getName(), representationName) == 0)
+    Node* node = graphOutput[iter];
+    if (!node->isComputationNode() && strcmp(node->getName(), representationName) == 0)
     {
-      if (!representationEntry->representationNode->isInitialized())
+      if (!node->isInitialized())
       {
 #if !defined(ENERGIA)
-        std::cerr << " ERROR! representationName=" << representationName << std::endl;
+        std::cerr << " ERROR! missing representation. representationName=" << representationName
+            << std::endl;
         exit(1);
 #else
         errorValue = 3;
 #endif
       }
-      return representationEntry->representationNode;
+      return node;
     }
   }
 #if !defined(ENERGIA)
   // This is a double check and nothing should enter at this point
-  std::cerr << " ERROR! this should not happen representationName=" << representationName
+  std::cerr << " ERROR! this should not happen. representationName=" << representationName
       << std::endl;
   exit(1);
 #else
@@ -235,7 +237,6 @@ void Graph::computeGraph()
     errorHandler();
     representationNode->addAuxiliaryNode(moduleNode);
   }
-
 }
 
 void Graph::topoSort()
@@ -314,6 +315,9 @@ void Graph::topoSort()
     errorHandler();
 #endif
   }
+
+  // Purge entries
+  purgeEntries();
 }
 
 void Graph::graphOutputInit()
@@ -396,6 +400,7 @@ void Graph::stream()
 #if !defined(ENERGIA)
   std::cout << std::endl << std::endl;
   // This shows the raw graph
+  std::cout << "moduleVector.size()=" << (int) moduleVector.size() << std::endl;
   for (int iter = 0; iter < moduleVector.size(); iter++)
   {
     const Graph::ModuleEntry* moduleEntry = moduleVector[iter];
@@ -403,6 +408,7 @@ void Graph::stream()
   }
 
   std::cout << std::endl;
+  std::cout << "representationVector.size()=" << (int) representationVector.size() << std::endl;
   for (int iter = 0; iter < representationVector.size(); iter++)
   {
     const Graph::RepresentationEntry* representationEntry = representationVector[iter];
@@ -411,7 +417,7 @@ void Graph::stream()
   }
 
   std::cout << std::endl;
-
+  std::cout << "graphStructureVector.size()=" << (int) graphStructureVector.size() << std::endl;
   for (int iter = 0; iter < graphStructureVector.size(); iter++)
   {
     Node* curr = graphStructureVector[iter];
@@ -424,6 +430,7 @@ void Graph::stream()
     std::cout << std::endl;
   }
 
+  std::cout << "graphOutput.size()=" << (int) graphOutput.size() << std::endl;
   for (int iter = 0; iter < graphOutput.size(); iter++)
   {
     const Node* x = graphOutput[iter];
