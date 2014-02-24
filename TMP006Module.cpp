@@ -31,12 +31,8 @@ TMP006Module::TMP006Module() :
 void TMP006Module::update(TMP006Representation& theTMP006Representation)
 {
 #if defined(ENERGIA)
-  uint16_t i16Object = read16(TMP006_O_VOBJECT);
-  uint16_t i16Ambient = read16(TMP006_O_TAMBIENT);
-  //Serial.print("object=");
-  //Serial.print(i16Object);
-  //Serial.print(",ambient=");
-  //Serial.println(i16Ambient);
+  parameters.i16Object = read16(TMP006_O_VOBJECT);
+  parameters.i16Ambient = read16(TMP006_O_TAMBIENT);
 
   float fTdie2, fS, fVo, fVx, fObj;
 
@@ -44,7 +40,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // The bottom two bits are not temperature data, so discard them but keep
   // the sign information.
   //
-  theTMP006Representation.fAmbient = (float) (i16Ambient / 4);
+  theTMP006Representation.fAmbient = (float) (parameters.i16Ambient / 4);
 
   //
   // Divide by 32 to get unit scaling correct.
@@ -66,7 +62,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // should perform a calibration in their environment and directly overwrite
   // this value after calling TMP006Init with the system specific value.
   //
-  fS = 6.40e-14
+  fS = parameters.fCalibrationFactor
       * (1.0f + (A1 * (theTMP006Representation.fAmbient))
           + (A2 * ((theTMP006Representation.fAmbient) * (theTMP006Representation.fAmbient))));
 
@@ -81,7 +77,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // 156.25e-9 is nanovolts per least significant bit from the voltage
   // register.
   //
-  fVx = (((float) i16Object) * 156.25e-9) - fVo;
+  fVx = (((float) parameters.i16Object) * 156.25e-9) - fVo;
 
   //
   // fObj is the feedback coefficient.
@@ -91,8 +87,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   //
   // Finally calculate the object temperature.
   //
-  theTMP006Representation.fObject = (sqrtf(sqrtf((fTdie2 * fTdie2 * fTdie2 * fTdie2) + (fObj / fS)))
-      - T_REF);
+  parameters.fObject = (sqrtf(sqrtf((fTdie2 * fTdie2 * fTdie2 * fTdie2) + (fObj / fS))) - T_REF);
 
   //
   // Convert the floating point ambient temperature  to an integer part
@@ -114,8 +109,8 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  i32IntegerPart = (int32_t) theTMP006Representation.fObject;
-  i32FractionPart = (int32_t) (theTMP006Representation.fObject * 1000.0f);
+  i32IntegerPart = (int32_t) parameters.fObject;
+  i32FractionPart = (int32_t) (parameters.fObject * 1000.0f);
   i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
   if (i32FractionPart < 0)
   {
@@ -133,7 +128,7 @@ uint16_t TMP006Module::read16(uint8_t cmd)
 {
 #if defined(ENERGIA)
   // Send request
-  Wire.beginTransmission(TMP006_I2C_ADDRESS);
+  Wire.beginTransmission(parameters.ui8Addr);
   // Start talking
   // Ask for register
   Wire.write(cmd);
@@ -142,8 +137,8 @@ uint16_t TMP006Module::read16(uint8_t cmd)
   // Request bytes
   // Wait for response
   //
-  Wire.requestFrom((uint8_t) TMP006_I2C_ADDRESS, (uint8_t) 2); // need to cast int to avoid compiler warnings
-  while (Wire.available() == 0)
+  Wire.requestFrom(parameters.ui8Addr, (uint8_t) 2);
+  while (Wire.available() < 1)
     ;
   return (Wire.read() << 8 | Wire.read());
 #else

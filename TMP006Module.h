@@ -30,6 +30,37 @@ class TMP006Module: public TMP006ModuleBase
   private:
     int_fast32_t i32IntegerPart;
     int_fast32_t i32FractionPart;
+
+  protected:
+    class TMP006
+    {
+      public:
+        //
+        // The I2C address of the TMP006.
+        //
+        uint8_t ui8Addr;
+
+        //
+        // Calibration factor.  Left to application to implement calibration
+        // See term S0 in http://www.ti.com/lit/ug/sbou107/sbou107.pdf
+        //
+        float fCalibrationFactor;
+
+        float fObject;
+
+        uint16_t i16Object;
+
+        uint16_t i16Ambient;
+
+        TMP006() :
+            ui8Addr(TMP006_I2C_ADDRESS), fCalibrationFactor(6.40e-14), fObject(0), i16Object(0), i16Ambient(
+                0)
+        {
+        }
+    };
+
+    TMP006 parameters;
+
   public:
     TMP006Module();
     void update(TMP006Representation& theTMP006Representation);

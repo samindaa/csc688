@@ -105,6 +105,12 @@ class BMP180Module: public BMP180ModuleBase
         // The data buffer used for sending/receiving data to/from the BMP180.
         //
         uint8_t pui8Data[3];
+
+        BMP180() :
+            ui8Addr(BMP180_I2C_ADDRESS), i16AC1(0), i16AC2(0), i16AC3(0), ui16AC4(0), ui16AC5(0), ui16AC6(
+                0), i16B1(0), i16B2(0), i16MC(0), i16MD(0), ui8Mode(0)
+        {
+        }
     };
 
     BMP180 parameters;

@@ -29,19 +29,47 @@ END_MODULE
 class ISL29023Module: public ISL29023ModuleBase
 {
   private:
-    //
-    // Instance copy of the range setting.  Used in GetFloat functions
-    //
-    uint8_t ui8Range;
+    class ISL29023
+    {
+      public:
+        //
+        // The I2C address of the ISL29023.
+        //
+        uint8_t ui8Addr;
 
-    //
-    // Instance copy of the resolution setting.  Used in GetFloat function.
-    //
-    uint8_t ui8Resolution;
+        //
+        // Instance copy of the range setting.  Used in GetFloat functions
+        //
+        uint8_t ui8Range;
+
+        //
+        // Instance copy of the resolution setting.  Used in GetFloat function.
+        //
+        uint8_t ui8Resolution;
+
+        //
+        // The data buffer used for sending/receiving data to/from the ISL29023.
+        //
+        uint8_t pui8Data[2];
+
+        ISL29023() :
+            ui8Addr(ISL29023_I2C_ADDRESS), ui8Range(0), ui8Resolution(0)
+        {
+        }
+    };
+
+    ISL29023 parameters;
+    int32_t i32IntegerPart;
+    int32_t i32FractionPart;
 
   public:
     ISL29023Module();
+    void init();
     void update(ISL29023Representation& theISL29023Representation);
+
+  private:
+    void I2CMRead();
+    void ISL29023AppAdjustRange(ISL29023Representation& theISL29023Representation);
 };
 
 #endif /* ISL29023MODULE_H_ */

@@ -14,6 +14,11 @@ REPRESENTATION(ISL29023Representation)
 class ISL29023Representation: public ISL29023RepresentationBase
 {
   public:
+    float fAmbient;
+    ISL29023Representation() :
+        fAmbient(0)
+    {
+    }
 
 };
 

@@ -23,8 +23,6 @@ BMP180Module::~BMP180Module()
 
 void BMP180Module::init()
 {
-  parameters.ui8Addr = BMP180_I2C_ADDRESS;
-  parameters.ui8Mode = 0;
   calibration();
 }
 
@@ -129,7 +127,7 @@ void BMP180Module::I2CMRead(const uint8_t& addr, const uint8_t& bytes)
   Wire.write(addr);
   Wire.endTransmission(false);
   Wire.requestFrom(parameters.ui8Addr, bytes);
-  while (Wire.available() == 0)
+  while (Wire.available() < bytes - 1)
     ;
   parameters.pui8Data[0] = Wire.read();
   parameters.pui8Data[1] = Wire.read();
