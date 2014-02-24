@@ -11,9 +11,9 @@ void TestModule2::execute()
 {
 #if defined(ENERGIA)
   if (theTestRepresentation1->blinkslow)
-    blinkslow();
+  blinkslow();
   else if (theTestRepresentation1->blinkfast)
-    blinkfast();
+  blinkfast();
   else if (theTestRepresentation2->ulTempValueC > 0)
   {
     // blink green led
@@ -31,7 +31,19 @@ void TestModule2::execute()
     delay(250);
     state ^= HIGH;
   }
+
+  Serial.print("TMP: ");
+  int32_t i32IntegerPart = (int32_t) theTestRepresentation2->ulTempValueC;
+  int32_t i32FractionPart = (int32_t) (theTestRepresentation2->ulTempValueC * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
+  i32FractionPart *= -1;
+  Serial.print(i32IntegerPart);
+  Serial.print(".");
+  Serial.println(i32FractionPart);
+
 #endif
+
 
 }
 

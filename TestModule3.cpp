@@ -48,8 +48,19 @@ void TestModule3::update(TestRepresentation2& theTestRepresentation2)
 
    if (Serial.available())
    Serial.println(ulTempValueC);*/
-  theTestRepresentation2.ulTempValueC = ulTempValueC;
+  theTestRepresentation2.ulTempValueC = 100;
+
+  Serial.print("TMP1: ");
+  int32_t i32IntegerPart = (int32_t) theTestRepresentation2.ulTempValueC;
+  int32_t i32FractionPart = (int32_t) (theTestRepresentation2.ulTempValueC * 1000.0f);
+  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
+  if (i32FractionPart < 0)
+  i32FractionPart *= -1;
+  Serial.print(i32IntegerPart);
+  Serial.print(".");
+  Serial.println(i32FractionPart);
 #endif
+
 }
 
 MAKE_MODULE(TestModule3)

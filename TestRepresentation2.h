@@ -14,7 +14,7 @@ REPRESENTATION(TestRepresentation2)
 class TestRepresentation2: public TestRepresentation2Base
 {
   public:
-    uint32_t ulTempValueC;
+    float ulTempValueC;
     TestRepresentation2() :
         ulTempValueC(0)
     {

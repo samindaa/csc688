@@ -24,6 +24,8 @@ Graph::Graph() :
 
 Graph::~Graph()
 {
+  // Purge entries
+  purgeEntries();
   graphOutput.purge();
 }
 
@@ -95,7 +97,7 @@ Node* Graph::getRepresentation(const char* representationName)
       if (!representationEntry->representationNode->isInitialized())
       {
 #if !defined(ENERGIA)
-        std::cerr << " ERROR! " << std::endl;
+        std::cerr << " ERROR! representationName=" << representationName << std::endl;
         exit(1);
 #else
         errorValue = 3;
@@ -106,7 +108,8 @@ Node* Graph::getRepresentation(const char* representationName)
   }
 #if !defined(ENERGIA)
   // This is a double check and nothing should enter at this point
-  std::cerr << " ERROR! " << std::endl;
+  std::cerr << " ERROR! this should not happen representationName=" << representationName
+      << std::endl;
   exit(1);
 #else
   errorValue = 4;
@@ -311,9 +314,6 @@ void Graph::topoSort()
     errorHandler();
 #endif
   }
-
-  // Purge entries
-  purgeEntries();
 }
 
 void Graph::graphOutputInit()
