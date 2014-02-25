@@ -13,8 +13,8 @@
 #include "TestRepresentation1.h"
 
 MODULE(TestModule1)
-REQUIRES(LaunchPadRepresentation)
-PROVIDES(TestRepresentation1)
+  REQUIRES(LaunchPadRepresentation) //
+  PROVIDES(TestRepresentation1)
 END_MODULE
 
 class TestModule1: public TestModule1Base

@@ -22,8 +22,8 @@
 #define TMP006_I2C_ADDRESS      0x41
 
 MODULE(TMP006Module)
-REQUIRES(LaunchPadRepresentation)
-PROVIDES(TMP006Representation)
+  REQUIRES(LaunchPadRepresentation) //
+  PROVIDES(TMP006Representation)
 END_MODULE
 class TMP006Module: public TMP006ModuleBase
 {

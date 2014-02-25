@@ -21,8 +21,8 @@
 #define SHT21_I2C_ADDRESS  0x40
 
 MODULE(SHT21Module)
-REQUIRES(LaunchPadRepresentation)
-PROVIDES(SHT21Representation)
+  REQUIRES(LaunchPadRepresentation) //
+  PROVIDES(SHT21Representation)
 END_MODULE
 class SHT21Module: public SHT21ModuleBase
 {

@@ -13,8 +13,8 @@
 #include "TestRepresentation2.h"
 
 MODULE(TestModule2)
-REQUIRES(TestRepresentation1)
-REQUIRES(TestRepresentation2)
+  REQUIRES(TestRepresentation1) //
+  REQUIRES(TestRepresentation2)
 END_MODULE
 
 class TestModule2: public TestModule2Base

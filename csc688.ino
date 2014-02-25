@@ -12,6 +12,5 @@ void setup()
 void loop()
 {
   Graph::getInstance().graphOutputUpdate();
-  Serial.println("*** cycle ***");
-  delay(100); // ADC to recover
+  //delay(2000); //<< SLOW DOWN to DEBUG 
 }

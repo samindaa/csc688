@@ -22,7 +22,7 @@
 
 
 MODULE(ISL29023Module)
-  REQUIRES(LaunchPadRepresentation)
+  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(ISL29023Representation)
 END_MODULE
 
