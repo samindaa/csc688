@@ -12,6 +12,7 @@
 #include "LaunchPadRepresentation.h"
 #include "MPU9150Representation.h"
 #include "hw_mpu9150.h"
+#include "hw_ak8975.h"
 #include "comp_dcm.h"
 
 //*****************************************************************************
@@ -20,6 +21,32 @@
 //
 //*****************************************************************************
 #define MPU9150_I2C_ADDRESS     0x68
+
+//*****************************************************************************
+//
+// The states of the MPU9150 state machine.
+//
+//*****************************************************************************
+#define MPU9150_STATE_IDLE      0           // State machine is idle
+#define MPU9150_STATE_LAST      1           // Last step in a sequence
+#define MPU9150_STATE_READ      2           // Waiting for read
+#define MPU9150_STATE_WRITE     3           // Waiting for write
+#define MPU9150_STATE_RMW       4           // Waiting for read modify write
+#define MPU9150_STATE_INIT_RESET                                              \
+                                5           // reset request issued.
+#define MPU9150_STATE_INIT_RESET_WAIT                                         \
+                                6           // polling wait for reset complete
+#define MPU9150_STATE_INIT_PWR_MGMT                                           \
+                                7           // wake up the device.
+#define MPU9150_STATE_INIT_USER_CTRL                                          \
+                                8           // init user control
+#define MPU9150_STATE_INIT_SAMPLE_RATE_CFG                                    \
+                                9           // init the sensors and filters
+#define MPU9150_STATE_INIT_I2C_SLAVE_DLY                                      \
+                                10          // set the ak8975 polling delay
+#define MPU9150_STATE_INIT_I2C_SLAVE_0                                        \
+                                11          // config ak8975 automatic read
+#define MPU9150_STATE_RD_DATA   12          // Waiting for data read
 
 
 MODULE(MPU9150Module)
@@ -36,6 +63,11 @@ class MPU9150Module: public MPU9150ModuleBase
         // The I2C address of the MPU9150.
         //
         uint8_t ui8Addr;
+        
+        //
+        // The state of the state machine used while accessing the MPU9150.
+        //
+        uint8_t ui8State;
 
         //
         // The current accelerometer afs_sel setting
@@ -64,7 +96,7 @@ class MPU9150Module: public MPU9150ModuleBase
         Command command;
 
         MPU9150() :
-            ui8Addr(MPU9150_I2C_ADDRESS), ui8AccelAfsSel(0), ui8GyroFsSel(0)
+            ui8Addr(MPU9150_I2C_ADDRESS), ui8State(0), ui8AccelAfsSel(0), ui8GyroFsSel(0)
         {
         }
     };
@@ -89,6 +121,8 @@ class MPU9150Module: public MPU9150ModuleBase
     void MPU9150DataGyroGetFloat(MPU9150Representation& theMPU9150Representation);
     void MPU9150DataMagnetoGetFloat(MPU9150Representation& theMPU9150Representation);
 
+    void I2CMWrite(const uint8_t& ui8Count);
+    void I2CMRead(const uint8_t& ui8CountOut, const uint8_t& ui8CountIn);
     void debug(const char* msg, const float& fValue);
 };
 

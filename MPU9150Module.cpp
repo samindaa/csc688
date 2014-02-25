@@ -136,23 +136,17 @@ void MPU9150Module::update(MPU9150Representation& theMPU9150Representation)
   // (ACCEL_XOUT_H(0x3B) -> GYRO_ZOUT_L(0x48) = 14 bytes
   // Grab Ext Sens Data as well for another 8 bytes.  ST1 + Mag Data + ST2
   //
-  Wire.beginTransmission(parameters.ui8Addr);
-  Wire.write(MPU9150_O_ACCEL_XOUT_H);
-  Wire.endTransmission(false);
-  Wire.requestFrom(parameters.ui8Addr, (uint8_t) 22);
-  while (Wire.available() < 21)
-    ;
-  for (int i = 0; i < 22; i++)
-    parameters.pui8Data[i] = Wire.read();
+  parameters.command.pui8Buffer[0] = MPU9150_O_ACCEL_XOUT_H;
+  I2CMRead(1, 14);
 
   MPU9150DataAccelGetFloat(theMPU9150Representation);
   debug("AccX: ", theMPU9150Representation.fAccelX);
   debug("AccY: ", theMPU9150Representation.fAccelY);
   debug("AccxZ: ", theMPU9150Representation.fAccelZ);
-  MPU9150DataMagnetoGetFloat(theMPU9150Representation);
-  debug("MagnetoX: ", theMPU9150Representation.fMagnetoX);
-  debug("MagnetoY: ", theMPU9150Representation.fMagnetoY);
-  debug("MagnetoZ: ", theMPU9150Representation.fMagnetoZ);
+  //MPU9150DataMagnetoGetFloat(theMPU9150Representation);
+  //debug("MagnetoX: ", theMPU9150Representation.fMagnetoX);
+  //debug("MagnetoY: ", theMPU9150Representation.fMagnetoY);
+  //debug("MagnetoZ: ", theMPU9150Representation.fMagnetoZ);
   MPU9150DataGyroGetFloat(theMPU9150Representation);
   debug("GyroX: ", theMPU9150Representation.fGyroX);
   debug("GyroY: ", theMPU9150Representation.fGyroY);
@@ -264,6 +258,39 @@ void MPU9150Module::MPU9150DataMagnetoGetFloat(MPU9150Representation& theMPU9150
 #endif
 }
 
+void MPU9150Module::I2CMWrite(const uint8_t& ui8Count)
+{
+#if defined(ENERGIA)
+  Wire.beginTransmission(parameters.ui8Addr);
+  for (uint8_t i = 0; i < ui8Count; i++)
+    Wire.write(parameters.command.pui8Buffer[i]);
+  Wire.endTransmission();
+#endif
+}
+
+void MPU9150Module::I2CMRead(const uint8_t& ui8CountOut, const uint8_t& ui8CountIn)
+{
+#if defined(ENERGIA)
+  Wire.beginTransmission(parameters.ui8Addr);
+  for (uint8_t i = 0; i < ui8CountOut; i++)
+    Wire.write(parameters.command.pui8Buffer[i]);
+  Wire.endTransmission(false);
+  Wire.requestFrom(parameters.ui8Addr, ui8CountIn);
+  if (ui8CountIn == 1)
+  {
+    while (Wire.available() == 0)
+      ;
+  }
+  else
+  {
+    while (Wire.available() < ui8CountIn - 1)
+      ;
+  }
+  for (uint8_t i = 0; i < ui8CountIn; i++)
+    parameters.pui8Data[i] = Wire.read();
+#endif
+}
+
 void MPU9150Module::debug(const char* msg, const float& fValue)
 {
 #if defined(ENERGIA)
@@ -278,6 +305,7 @@ void MPU9150Module::debug(const char* msg, const float& fValue)
   Serial.println(i32FractionPart);
 #endif
 }
+
 
 MAKE_MODULE(MPU9150Module)
 
