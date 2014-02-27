@@ -12,7 +12,8 @@
 #include "TestRepresentation2.h"
 
 MODULE(TestModule3)
-PROVIDES(TestRepresentation2)
+  PROVIDES(TestRepresentation2)
+//REQUIRES(TestRepresentation2) // DEBUG one way to test errors
 END_MODULE
 
 class TestModule3: public TestModule3Base

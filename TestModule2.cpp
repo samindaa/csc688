@@ -7,44 +7,38 @@
 
 #include "TestModule2.h"
 
+TestModule2::TestModule2() :
+    ledState(0x01), prevTime(0)
+{
+}
+
 void TestModule2::execute()
 {
 #if defined(ENERGIA)
-  if (theTestRepresentation1->blinkslow)
-  blinkslow();
-  else if (theTestRepresentation1->blinkfast)
-  blinkfast();
-  else if (theTestRepresentation2->ulTempValueC > 0)
+  // blink green led
+  if (millis() - prevTime > 250)
   {
-    // blink green led
-    static int toggle = HIGH;
-    digitalWrite(RED_LED, toggle);
-    digitalWrite(GREEN_LED, toggle);
-    toggle ^= HIGH;
-    delay(250);
+    prevTime = millis();
+    ledState ^= HIGH;
+  }
+
+  if (theTestRepresentation1->blinkslow)
+    blinkslow();
+  else if (theTestRepresentation1->blinkfast)
+    blinkfast();
+  else if (theISL29023Representation->fAmbient < 10) // dark
+  {
+    digitalWrite(RED_LED, ledState);
+    digitalWrite(GREEN_LED, ledState);
+    digitalWrite(BLUE_LED, ledState);
   }
   else
   {
-    static uint8_t state = HIGH;
-    digitalWrite(RED_LED, state);
-    digitalWrite(GREEN_LED, state);
-    digitalWrite(BLUE_LED, state);
-    delay(250);
-    state ^= HIGH;
+    digitalWrite(RED_LED, ledState);
+    digitalWrite(GREEN_LED, ledState);
+    digitalWrite(BLUE_LED, LOW);
   }
-
-  Serial.print("TMP: ");
-  int32_t i32IntegerPart = (int32_t) theTestRepresentation2->ulTempValueC;
-  int32_t i32FractionPart = (int32_t) (theTestRepresentation2->ulTempValueC * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  i32FractionPart *= -1;
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
-
 #endif
-
 
 }
 

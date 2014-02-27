@@ -11,16 +11,22 @@
 #include "Template.h"
 #include "TestRepresentation1.h"
 #include "TestRepresentation2.h"
+#include "ISL29023Representation.h"
 
 MODULE(TestModule2)
   REQUIRES(TestRepresentation1) //
-  REQUIRES(TestRepresentation2)
+  REQUIRES(TestRepresentation2) //
+  REQUIRES(ISL29023Representation)
 END_MODULE
 
 class TestModule2: public TestModule2Base
 {
-public:
-  void execute();
+  private:
+    uint8_t ledState;
+    unsigned long prevTime;
+  public:
+    TestModule2();
+    void execute();
 
 private:
   void blinkfast();

@@ -72,7 +72,7 @@ void ISL29023Module::update(ISL29023Representation& theISL29023Representation)
   //
   // Print the temperature as integer and fraction parts.
   //
-  Serial.print("Visible Lux:");
+  Serial.print("Visible Lux: ");
   Serial.println(theISL29023Representation.fAmbient, 3);
   // TODO range setting
 

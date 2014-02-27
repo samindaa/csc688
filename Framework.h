@@ -14,7 +14,9 @@
 #else
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <iostream>
 #endif
 
 /**
@@ -233,6 +235,13 @@ class Graph
     TopoQueue topoQueue;
     GraphOutput graphOutput;
     uint8_t errorValue;
+#if defined(ENERGIA)
+    typedef String ErrorMsg;
+#else
+    typedef std::string ErrorMsg;
+#endif
+    ErrorMsg errorMsg;
+    unsigned long baudRate;
 
     static Graph& getInstance();
     static void deleteInstance();
@@ -247,6 +256,8 @@ class Graph
     void topoSort();
     void graphOutputInit();
     void graphOutputUpdate();
+    void setBaudRate(const unsigned long& baudRate);
+    unsigned long getBaudRate() const;
 
   private:
     void errorHandler();

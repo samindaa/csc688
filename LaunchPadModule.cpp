@@ -14,7 +14,7 @@ void LaunchPadModule::init()
 {
 #if defined(ENERGIA)
   // Serial port
-  Serial.begin(115200); //9600
+  Serial.begin(Graph::getInstance().getBaudRate());
   // LED
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
