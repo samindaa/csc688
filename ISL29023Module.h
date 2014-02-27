@@ -72,6 +72,8 @@ class ISL29023Module: public ISL29023ModuleBase
 
   private:
     void I2CMRead();
+    void ISL29023ReadModifyWrite(const uint_fast8_t& ui8Reg, const uint8_t& ui8Mask,
+        const uint8_t& ui8Value);
     void ISL29023AppAdjustRange(ISL29023Representation& theISL29023Representation);
 };
 
