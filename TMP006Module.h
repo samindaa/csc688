@@ -28,10 +28,6 @@ END_MODULE
 class TMP006Module: public TMP006ModuleBase
 {
   private:
-    int_fast32_t i32IntegerPart;
-    int_fast32_t i32FractionPart;
-
-  protected:
     class TMP006
     {
       public:
@@ -62,7 +58,6 @@ class TMP006Module: public TMP006ModuleBase
     TMP006 parameters;
 
   public:
-    TMP006Module();
     void update(TMP006Representation& theTMP006Representation);
 
   private:

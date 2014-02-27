@@ -20,7 +20,6 @@
 //*****************************************************************************
 #define ISL29023_I2C_ADDRESS    0x44
 
-
 MODULE(ISL29023Module)
   REQUIRES(LaunchPadRepresentation) //
   PROVIDES(ISL29023Representation)
@@ -47,23 +46,27 @@ class ISL29023Module: public ISL29023ModuleBase
         //
         uint8_t ui8Resolution;
 
+        uint_fast8_t ui8Reg;
+
+        uint8_t ui8Mask;
+
+        uint8_t ui8Value;
+
         //
         // The data buffer used for sending/receiving data to/from the ISL29023.
         //
-        uint8_t pui8Data[2];
+        uint8_t pui8Data[4];
 
         ISL29023() :
-            ui8Addr(ISL29023_I2C_ADDRESS), ui8Range(0), ui8Resolution(0)
+            ui8Addr(ISL29023_I2C_ADDRESS), ui8Range(0), ui8Resolution(0), ui8Reg(0), ui8Mask(0), ui8Value(
+                0)
         {
         }
     };
 
     ISL29023 parameters;
-    int32_t i32IntegerPart;
-    int32_t i32FractionPart;
 
   public:
-    ISL29023Module();
     void init();
     void update(ISL29023Representation& theISL29023Representation);
 

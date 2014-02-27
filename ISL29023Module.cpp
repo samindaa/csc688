@@ -49,11 +49,6 @@ const float g_fResolutionLookup[4] =
 const float g_fBetaLookup[4] =
 { 95.238, 23.810, 5.952, 1.486 };
 
-ISL29023Module::ISL29023Module() :
-    i32IntegerPart(0), i32FractionPart(0)
-{
-}
-
 void ISL29023Module::update(ISL29023Representation& theISL29023Representation)
 {
 #if defined(ENERGIA)
@@ -75,24 +70,10 @@ void ISL29023Module::update(ISL29023Representation& theISL29023Representation)
   theISL29023Representation.fAmbient = ((float) ui16Light) * (fRange / fResolution);
 
   //
-  // Perform the conversion from float to a printable set of integers
-  //
-  i32IntegerPart = (int32_t) theISL29023Representation.fAmbient;
-  i32FractionPart = (int32_t) (theISL29023Representation.fAmbient * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
-
-  //
   // Print the temperature as integer and fraction parts.
   //
   Serial.print("Visible Lux:");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
-
+  Serial.println(theISL29023Representation.fAmbient, 3);
   // TODO range setting
 
 #endif
@@ -102,8 +83,7 @@ void ISL29023Module::init()
 {
 #if defined(ENERGIA)
   parameters.ui8Range = ISL29023_CMD_II_RANGE_1K >> ISL29023_CMD_II_RANGE_S;
-  parameters.ui8Resolution = (ISL29023_CMD_II_ADC_RES_16 >>
-  ISL29023_CMD_II_ADC_RES_S);
+  parameters.ui8Resolution = (ISL29023_CMD_II_ADC_RES_16 >> ISL29023_CMD_II_ADC_RES_S);
 
   //
   // Put the device into power down mode.
@@ -120,12 +100,56 @@ void ISL29023Module::init()
   // sample persistence before the INT pin is asserted. Clears the INT flag.
   // Persistence setting of 8 is sufficient to ignore camera flashes.
   //
-  /*uint8_t ui8Mask = (ISL29023_CMD_I_OP_MODE_M | ISL29023_CMD_I_INT_PERSIST_M |
-  ISL29023_CMD_I_INT_FLAG_M);
-  Wire.beginTransmission(parameters.ui8Addr);
-  Wire.write(~ui8Mask);
-  Wire.write((ISL29023_CMD_I_OP_MODE_ALS_CONT | ISL29023_CMD_I_INT_PERSIST_8));
-  Wire.endTransmission();*/
+  parameters.ui8Reg = ISL29023_O_CMD_I;
+  parameters.ui8Mask = ~(ISL29023_CMD_I_OP_MODE_M | ISL29023_CMD_I_INT_PERSIST_M
+      | ISL29023_CMD_I_INT_FLAG_M);
+  parameters.ui8Value = (ISL29023_CMD_I_OP_MODE_ALS_CONT | ISL29023_CMD_I_INT_PERSIST_8);
+
+  //
+  // Construct the I2C command to access the requested register.
+  //
+  parameters.pui8Data[0] = parameters.ui8Reg;
+  if (parameters.ui8Mask == 0)
+  {
+    //
+    // Set the new register value in the command buffer.
+    //
+    parameters.pui8Data[1] = parameters.ui8Value;
+    Wire.beginTransmission(parameters.ui8Addr);
+    for (int i = 0; i < 2; i++)
+      Wire.write(parameters.pui8Data[i]);
+    Wire.endTransmission();
+
+  }
+  else
+  {
+    Wire.beginTransmission(parameters.ui8Addr);
+    Wire.write(parameters.pui8Data[0]);
+    Wire.endTransmission(false);
+    Wire.requestFrom(parameters.ui8Addr, (uint8_t) 1);
+    while (Wire.available() == 0)
+      ;
+    parameters.pui8Data[1] = Wire.read();
+
+    //
+    // The read portion of the read-modify-write has completed.
+    //
+
+    //
+    // Modify the register data that was just read.
+    //
+    parameters.pui8Data[1] = ((parameters.pui8Data[1] & parameters.ui8Mask) | parameters.ui8Value);
+
+    //
+    // Write the data back to the device.
+    //
+    Wire.beginTransmission(parameters.ui8Addr);
+    for (int i = 0; i < 2; i++)
+      Wire.write(parameters.pui8Data[i]);
+    Wire.endTransmission();
+
+    // TODO:
+  }
 
   //
   // Configure the upper threshold to 80% of maximum value

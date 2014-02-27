@@ -28,10 +28,7 @@ MODULE(BMP180Module)
 END_MODULE
 class BMP180Module: public BMP180ModuleBase
 {
-  protected:
-    int32_t i32IntegerPart;
-    int32_t i32FractionPart;
-
+  private:
     class BMP180
     {
       public:
@@ -110,8 +107,6 @@ class BMP180Module: public BMP180ModuleBase
     BMP180 parameters;
 
   public:
-    BMP180Module();
-    ~BMP180Module();
     void init();
     void update(BMP180Representation& theBMP180Representation);
 

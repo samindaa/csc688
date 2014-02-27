@@ -52,11 +52,8 @@ class SHT21Module: public SHT21ModuleBase
     };
 
     SHT21 parameters;
-    int32_t i32IntegerPart;
-    int32_t i32FractionPart;
 
   public:
-    SHT21Module();
     void init();
     void update(SHT21Representation& theSHT21Representation);
 };

@@ -11,16 +11,6 @@
 #include "Wire.h"
 #endif
 
-BMP180Module::BMP180Module() :
-    i32IntegerPart(0), i32FractionPart(0)
-{
-
-}
-
-BMP180Module::~BMP180Module()
-{
-}
-
 void BMP180Module::init()
 {
   calibration();
@@ -33,33 +23,11 @@ void BMP180Module::update(BMP180Representation& theBMP180Representation)
 
 #ifdef DEBUG_BMP180
   Serial.print("Temperature: ");
-  i32IntegerPart = (int32_t) theBMP180Representation.fTemperature;
-  i32FractionPart = (int32_t) (theBMP180Representation.fTemperature * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-    i32FractionPart *= -1;
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.print(i32FractionPart);
-  Serial.println("C");
+  Serial.println(theBMP180Representation.fTemperature, 3);
   Serial.print("Pressure:    ");
-  i32IntegerPart = (int32_t) theBMP180Representation.fPressure;
-  i32FractionPart = (int32_t) (theBMP180Representation.fPressure * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-    i32FractionPart *= -1;
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(theBMP180Representation.fPressure, 3);
   Serial.print("Altitude: ");
-  i32IntegerPart = (int32_t) theBMP180Representation.fAltitude;
-  i32FractionPart = (int32_t) (theBMP180Representation.fAltitude * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-    i32FractionPart *= -1;
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(theBMP180Representation.fAltitude, 3);
 #endif
 
 #endif

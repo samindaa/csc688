@@ -11,11 +11,6 @@
 #include "Wire.h"
 #endif
 
-SHT21Module::SHT21Module() :
-    i32IntegerPart(0), i32FractionPart(0)
-{
-}
-
 void SHT21Module::init()
 {
 #if defined(ENERGIA)
@@ -106,33 +101,13 @@ void SHT21Module::update(SHT21Representation& theSHT21Representation)
   // percent humidity.
   //
   theSHT21Representation.fHumidity *= 100.0f;
-  i32IntegerPart = (int32_t) theSHT21Representation.fHumidity;
-  i32FractionPart = (int32_t) (theSHT21Representation.fHumidity * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
-
   Serial.print("Humidity: ");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.print(i32FractionPart);
+  Serial.println(theSHT21Representation.fHumidity, 3);
   //
   // Perform the conversion from float to a printable set of integers
   //
-  i32IntegerPart = (int32_t) theSHT21Representation.fTemperature;
-  i32FractionPart = (int32_t) (theSHT21Representation.fTemperature * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
-
   Serial.print("\t Temperature: ");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(theSHT21Representation.fTemperature, 3);
 
 #endif
 }

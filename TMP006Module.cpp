@@ -23,11 +23,6 @@
 #define B2                      4.63e-09
 #define C2                      13.4
 
-TMP006Module::TMP006Module() :
-    i32IntegerPart(0), i32FractionPart(0)
-{
-}
-
 void TMP006Module::update(TMP006Representation& theTMP006Representation)
 {
 #if defined(ENERGIA)
@@ -93,33 +88,15 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  i32IntegerPart = (int32_t) theTMP006Representation.fAmbient;
-  i32FractionPart = (int32_t) (theTMP006Representation.fAmbient * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
   Serial.print("Ambient=");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(theTMP006Representation.fAmbient, 3);
 
   //
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  i32IntegerPart = (int32_t) parameters.fObject;
-  i32FractionPart = (int32_t) (parameters.fObject * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-  {
-    i32FractionPart *= -1;
-  }
   Serial.print("Object=");
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(parameters.fObject, 3);
 
 #endif
 }
