@@ -234,7 +234,7 @@ class Graph
     typedef Vector<Node*> GraphOutput;
     TopoQueue topoQueue;
     GraphOutput graphOutput;
-    uint8_t errorValue;
+    bool errorState;
 #if defined(ENERGIA)
     typedef String ErrorMsg;
 #else

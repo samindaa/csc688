@@ -16,7 +16,7 @@
 Graph* Graph::theInstance = 0;
 
 Graph::Graph() :
-    errorValue(0), baudRate(115200)
+    errorState(false), baudRate(115200)
 {
 }
 
@@ -39,7 +39,7 @@ void Graph::addModule(Node* theInstance)
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
-      errorValue = 1;
+      errorState = true;
 #endif
     }
   }
@@ -66,7 +66,7 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
-      errorValue = 2;
+      errorState = true;
 #endif
     }
   }
@@ -107,7 +107,7 @@ Node* Graph::getRepresentation(const char* representationName)
         std::cerr << " ERROR!" << errorMsg << std::endl;
         exit(1);
 #else
-        errorValue = 3;
+        errorState = true;
 #endif
       }
       return node;
@@ -120,7 +120,7 @@ Node* Graph::getRepresentation(const char* representationName)
   std::cerr << "ERROR!" << errorMsg << std::endl;
   exit(1);
 #else
-  errorValue = 4;
+  errorState = true;
 #endif
   return 0;
 }
@@ -186,7 +186,7 @@ void Graph::computeGraph()
 #if !defined(ENERGIA)
       std::cout << "ERROR!" << errorMsg << std::endl;
 #else
-      errorValue = 5;
+      errorState = true;
 #endif
     }
     if (representationNode == 0)
@@ -205,7 +205,7 @@ void Graph::computeGraph()
       std::cerr << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
-      errorValue = 6;
+      errorState = true;
 #endif
 
     }
@@ -243,7 +243,7 @@ void Graph::computeGraph()
       std::cerr << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
-      errorValue = 7;
+      errorState = true;
 #endif
     }
     errorHandler();
@@ -293,7 +293,7 @@ void Graph::topoSort()
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
-      errorValue = 8;
+      errorState = true;
       errorHandler();
 #endif
     }
@@ -313,10 +313,10 @@ void Graph::topoSort()
     errorMsg += (" cycle detected! ");
 #if !defined(ENERGIA)
     std::cout << "ERROR!" << errorMsg << (int) graphOutput.size() << " "
-        << (int) graphStructureVector.size() << std::endl;
+    << (int) graphStructureVector.size() << std::endl;
     exit(1);
 #else
-    errorValue = 9;
+    errorState = true;
     errorHandler();
 #endif
   }
@@ -328,7 +328,7 @@ void Graph::topoSort()
     std::cerr << "ERROR!" << errorMsg << std::endl;
     exit(1);
 #else
-    errorValue = 10;
+    errorState = true;
     errorHandler();
 #endif
   }
@@ -383,27 +383,32 @@ void Graph::errorHandler()
 {
 
 #if defined(ENERGIA)
-  if (errorValue > 0)
+  if (errorState)
   {
     Serial.begin(baudRate);
     pinMode(RED_LED, OUTPUT);
+    pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
+    uint8_t ledErrorState = HIGH;
+    unsigned long prevTime1 = millis();
+    unsigned long prevTime2 = prevTime1;
     for (;;)
     {
-      digitalWrite(RED_LED, LOW);
-      digitalWrite(BLUE_LED, LOW);
-      Serial.print("errorValue: ");
-      Serial.println(errorValue);
-      Serial.println(errorMsg);
-      uint8_t ledErrorState = HIGH;
-      for (int i = 0; i < errorValue; i++)
+      if (millis() - prevTime1 > 3000)
       {
-        digitalWrite(RED_LED, ledErrorState);
-        delay(100);
-        ledErrorState ^= HIGH; // toggle
+        prevTime1 = millis();
+        Serial.println(errorMsg);
       }
-      digitalWrite(BLUE_LED, HIGH);
-      delay(2000); // pause
+      uint8_t ledErrorState = HIGH;
+      if (millis() - prevTime2 > 250)
+      {
+        prevTime2 = millis();
+        ledErrorState ^= HIGH;
+      }
+      digitalWrite(RED_LED, ledErrorState);
     }
   }
 #endif
@@ -446,7 +451,7 @@ void Graph::stream()
   {
     const Graph::RepresentationEntry* representationEntry = representationVector[iter];
     std::cout << representationEntry->representationNode->getName() << " "
-        << representationEntry->providedModuleName << std::endl;
+    << representationEntry->providedModuleName << std::endl;
   }
 
   std::cout << std::endl;
@@ -482,7 +487,7 @@ void Graph::stream()
     {
       const Node* x = graphOutput[iter];
       if (x->isComputationNode())
-        graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     graph << "\t node [shape=ellipse, color=lightpink, style=filled]; ";
@@ -490,7 +495,7 @@ void Graph::stream()
     {
       Node* x = graphOutput[iter];
       if (!x->isComputationNode())
-        graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; ";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
@@ -502,9 +507,9 @@ void Graph::stream()
         {
           Node* y = x->getNextNodes()[j];
           if (y->isComputationNode())
-            graph << "edge [color=green]; \n";
+          graph << "edge [color=green]; \n";
           else
-            graph << "edge [color=blue]; \n";
+          graph << "edge [color=blue]; \n";
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
         }
       }
