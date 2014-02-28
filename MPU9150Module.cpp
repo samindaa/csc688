@@ -546,14 +546,7 @@ void MPU9150Module::debug(const char* msg, const float& fValue)
 {
 #if defined(ENERGIA)
   Serial.print(msg);
-  int32_t i32IntegerPart = (int32_t) fValue;
-  int32_t i32FractionPart = (int32_t) (fValue * 1000.0f);
-  i32FractionPart = i32FractionPart - (i32IntegerPart * 1000);
-  if (i32FractionPart < 0)
-    i32FractionPart *= -1;
-  Serial.print(i32IntegerPart);
-  Serial.print(".");
-  Serial.println(i32FractionPart);
+  Serial.println(fValue, 3);
 #endif
 }
 MAKE_MODULE(MPU9150Module)
