@@ -10,12 +10,10 @@
 
 #include "Template.h"
 #include "TestRepresentation1.h"
-#include "TestRepresentation2.h"
 #include "ISL29023Representation.h"
 
 MODULE(TestModule2)
   REQUIRES(TestRepresentation1) //
-  REQUIRES(TestRepresentation2) //
   REQUIRES(ISL29023Representation)
 END_MODULE
 
