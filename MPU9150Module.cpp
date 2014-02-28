@@ -328,6 +328,13 @@ void MPU9150Module::init()
   parameters.command.pui8Buffer[2] = MPU9150_INT_ENABLE_DATA_RDY_EN;
   I2CMWrite(3);
 
+  //
+  // Initialize the DCM system. 50 hz sample rate.
+  // accel weight = .2, gyro weight = .8, mag weight = .2
+  //
+  CompDCMInit(&g_sCompDCMInst, 1.0f / ((float) MOTION_SAMPLE_FREQ_HZ), DCM_ACCEL_WEIGHT,
+      DCM_GYRO_WEIGHT, DCM_MAG_WEIGHT);
+
 #endif
 }
 
