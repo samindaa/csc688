@@ -101,13 +101,13 @@ void SHT21Module::update(SHT21Representation& theSHT21Representation)
   // percent humidity.
   //
   theSHT21Representation.fHumidity *= 100.0f;
-  Serial.print("Humidity: ");
-  Serial.println(theSHT21Representation.fHumidity, 3);
+  //Serial.print("Humidity: ");
+  //Serial.println(theSHT21Representation.fHumidity, 3);
   //
   // Perform the conversion from float to a printable set of integers
   //
-  Serial.print("\t Temperature: ");
-  Serial.println(theSHT21Representation.fTemperature, 3);
+  //Serial.print("\t Temperature: ");
+  //Serial.println(theSHT21Representation.fTemperature, 3);
 
 #endif
 }

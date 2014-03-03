@@ -88,15 +88,15 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  Serial.print("Ambient=");
-  Serial.println(theTMP006Representation.fAmbient, 3);
+  //Serial.print("Ambient=");
+  //Serial.println(theTMP006Representation.fAmbient, 3);
 
   //
   // Convert the floating point ambient temperature  to an integer part
   // and fraction part for easy printing.
   //
-  Serial.print("Object=");
-  Serial.println(parameters.fObject, 3);
+  //Serial.print("Object=");
+  //Serial.println(parameters.fObject, 3);
 
 #endif
 }

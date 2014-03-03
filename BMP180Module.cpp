@@ -21,14 +21,12 @@ void BMP180Module::update(BMP180Representation& theBMP180Representation)
 #if defined(ENERGIA)
   calculation(theBMP180Representation);             // run calculations for temperature and pressure
 
-#ifdef DEBUG_BMP180
-  Serial.print("Temperature: ");
-  Serial.println(theBMP180Representation.fTemperature, 3);
-  Serial.print("Pressure:    ");
-  Serial.println(theBMP180Representation.fPressure, 3);
-  Serial.print("Altitude: ");
-  Serial.println(theBMP180Representation.fAltitude, 3);
-#endif
+  //Serial.print("Temperature: ");
+  //Serial.println(theBMP180Representation.fTemperature, 3);
+  //Serial.print("Pressure:    ");
+  //Serial.println(theBMP180Representation.fPressure, 3);
+  //Serial.print("Altitude: ");
+  //Serial.println(theBMP180Representation.fAltitude, 3);
 
 #endif
 
@@ -61,28 +59,26 @@ void BMP180Module::calibration()
   I2CMRead(BMP180_O_MD_MSB);
   parameters.i16MD = (int16_t) ((parameters.pui8Data[0] << 8) | parameters.pui8Data[1]);
 
-#if defined(DEBUG_BMP180)
-  Serial.print("i16AC1=");
-  Serial.println(parameters.i16AC1);
-  Serial.print("i16AC2=");
-  Serial.println(parameters.i16AC2);
-  Serial.print("i16AC3=");
-  Serial.println(parameters.i16AC3);
-  Serial.print("ui16AC4=");
-  Serial.println(parameters.ui16AC4);
-  Serial.print("ui16AC5=");
-  Serial.println(parameters.ui16AC5);
-  Serial.print("ui16AC6=");
-  Serial.println(parameters.ui16AC6);
-  Serial.print("i16B1=");
-  Serial.println(parameters.i16B1);
-  Serial.print("i16B2=");
-  Serial.println(parameters.i16B2);
-  Serial.print("i16MC=");
-  Serial.println(parameters.i16MC);
-  Serial.print("i16MD=");
-  Serial.println(parameters.i16MD);
-#endif
+  //Serial.print("i16AC1=");
+  //Serial.println(parameters.i16AC1);
+  //Serial.print("i16AC2=");
+  //Serial.println(parameters.i16AC2);
+  //Serial.print("i16AC3=");
+  //Serial.println(parameters.i16AC3);
+  //Serial.print("ui16AC4=");
+  //Serial.println(parameters.ui16AC4);
+  //Serial.print("ui16AC5=");
+  //Serial.println(parameters.ui16AC5);
+  //Serial.print("ui16AC6=");
+  //Serial.println(parameters.ui16AC6);
+  //Serial.print("i16B1=");
+  //Serial.println(parameters.i16B1);
+  //Serial.print("i16B2=");
+  //Serial.println(parameters.i16B2);
+  //Serial.print("i16MC=");
+  //Serial.println(parameters.i16MC);
+  //Serial.print("i16MD=");
+  //Serial.println(parameters.i16MD);
 
 #endif
 }
@@ -146,8 +142,6 @@ void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
 
   uint32_t rawPressure = (int32_t) ((parameters.pui8Data[0] << 16) | (parameters.pui8Data[1] << 8)
       | (parameters.pui8Data[2] & BMP180_OUT_XLSB_M));
-  Serial.print("rawPressure:");
-  Serial.println(rawPressure);
 
   // Get the oversampling ratio.
   //

@@ -22,8 +22,8 @@ void loop()
   if (elapsedTime < dutyCycleTime)
     delay(dutyCycleTime - elapsedTime);
   //DEBUG
-  Serial.print("elapsedTime=");
-  Serial.println(elapsedTime);
+  //Serial.print("elapsedTime=");
+  //Serial.println(elapsedTime);
 
   //delay(2000); //<< SLOW DOWN to DEBUG 
 }

@@ -351,17 +351,17 @@ void MPU9150Module::update(MPU9150Representation& theMPU9150Representation)
   I2CMRead(1, 22);
 
   MPU9150DataAccelGetFloat(theMPU9150Representation);
-  debug("AccX: ", theMPU9150Representation.fAccelX);
-  debug("AccY: ", theMPU9150Representation.fAccelY);
-  debug("AccxZ: ", theMPU9150Representation.fAccelZ);
+  //debug("AccX: ", theMPU9150Representation.fAccelX);
+  //debug("AccY: ", theMPU9150Representation.fAccelY);
+  //debug("AccxZ: ", theMPU9150Representation.fAccelZ);
   MPU9150DataGyroGetFloat(theMPU9150Representation);
-  debug("GyroX: ", theMPU9150Representation.fGyroX);
-  debug("GyroY: ", theMPU9150Representation.fGyroY);
-  debug("GyroZ: ", theMPU9150Representation.fGyroZ);
+  //debug("GyroX: ", theMPU9150Representation.fGyroX);
+  //debug("GyroY: ", theMPU9150Representation.fGyroY);
+  //debug("GyroZ: ", theMPU9150Representation.fGyroZ);
   MPU9150DataMagnetoGetFloat(theMPU9150Representation);
-  debug("MagnetoX: ", theMPU9150Representation.fMagnetoX);
-  debug("MagnetoY: ", theMPU9150Representation.fMagnetoY);
-  debug("MagnetoZ: ", theMPU9150Representation.fMagnetoZ);
+  //debug("MagnetoX: ", theMPU9150Representation.fMagnetoX);
+  //debug("MagnetoY: ", theMPU9150Representation.fMagnetoY);
+  //debug("MagnetoZ: ", theMPU9150Representation.fMagnetoZ);
 
   if (!dcmInitialized)
   {
@@ -426,9 +426,9 @@ void MPU9150Module::update(MPU9150Representation& theMPU9150Representation)
   // inside the interrupt routine to insure it is not skipped and
   // that the timing is consistent.
   //
-  debug("fRoll: ", theMPU9150Representation.fRoll);
-  debug("fPitch: ", theMPU9150Representation.fPitch);
-  debug("fYaw: ", theMPU9150Representation.fYaw);
+  //debug("fRoll: ", theMPU9150Representation.fRoll);
+  //debug("fPitch: ", theMPU9150Representation.fPitch);
+  //debug("fYaw: ", theMPU9150Representation.fYaw);
 
 #endif
 }

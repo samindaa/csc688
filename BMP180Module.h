@@ -14,7 +14,6 @@
 #include "hw_bmp180.h"
 
 
-#define DEBUG_BMP180           // uncomment for debug output (init serial in your sketch!)
 //*****************************************************************************
 //
 // Define BMP180 I2C Address.
