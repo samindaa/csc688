@@ -22,7 +22,7 @@
 
 #if defined(ENERGIA)
 #define STREAM_DELIMITER \
-  Serial.print("|");
+  Serial.println("|");
 
 #define STREAM(data) \
   Serial.print(data, 2); \
