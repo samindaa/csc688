@@ -29,7 +29,7 @@ void RS232Module::execute()
     for (int i = 0; i < n; i++)
     {
       if ((buf[i] < 32) && (buf[i] > 127)) /* replace unreadable control-codes by dots */
-        buf[i] = '';
+        buf[i] = '?';
     }
     printf("received %i bytes: %s\n", n, (char *) buf);
   }
