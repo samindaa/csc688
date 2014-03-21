@@ -26,7 +26,7 @@
  */
 
 /**
- * This is a very simple vector class
+ * This is a very simple multi-purpose vector class
  */
 template<typename T>
 class Vector
