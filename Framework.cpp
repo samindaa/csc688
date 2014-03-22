@@ -364,7 +364,10 @@ void Graph::graphOutputUpdate()
     if (node->isComputationNode())
       ((Module*) node)->execute();
     else
+    {
       ((Representation*) node)->updateThis(node->getPreviousNode(), node);
+      ((Representation*) node)->draw();
+    }
   }
 
 }

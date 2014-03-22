@@ -9,7 +9,7 @@
 
 RS232Module::RS232Module() :
     cport_nr(24 /* /dev/ttyS0 (COM1 on windows) */), bdrate(115200 /* 9600 baud */), cPointer(0), parserEOR(
-        false), burnoutPeriod(0)
+    false)
 {
 }
 
@@ -47,23 +47,21 @@ void RS232Module::update(RS232Representation& theRS232Representation)
       //printf("received %i bytes: %s\n", n, (char *) buf);
     }
   }
-  if (burnoutPeriod > 10)
-  {
-    std::istream_iterator<std::string> begin(ss);
-    std::istream_iterator<std::string> end;
-    std::vector<std::string> psInputs(begin, end);
-    for (std::vector<std::string>::iterator iter = psInputs.begin(); iter != psInputs.end(); ++iter)
-      theRS232Representation.pfInputs.push_back((float) std::atof((*iter).c_str()));
 
-    //usleep(100000); /* sleep for 100 milliSeconds */
-    // debug
-    for (std::vector<float>::const_iterator iter = theRS232Representation.pfInputs.begin();
-        iter != theRS232Representation.pfInputs.end(); ++iter)
-      std::cout << *iter << " ";
-    std::cout << std::endl;
+  std::istream_iterator<std::string> begin(ss);
+  std::istream_iterator<std::string> end;
+  std::vector<std::string> psInputs(begin, end);
+  if (psInputs.size() % 2 == 0)
+  {
+    for (size_t i = 0; i < psInputs.size(); i += 2)
+    {
+      int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
+      int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
+      theRS232Representation.pfInputs.push_back(FloatDetails(mantissa, exp));
+    }
   }
-  else
-    ++burnoutPeriod;
+
+  //usleep(100000); /* sleep for 100 milliSeconds */
 }
 
 MAKE_MODULE(RS232Module)

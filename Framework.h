@@ -185,6 +185,7 @@ class Representation: public Node
   public: void (*updateThis)(Node* , Node* );
   public: Representation() : Node(), updateThis(0)  {}
   public: virtual ~Representation()                 {}
+  public: virtual void draw() const                 {}
 };
 
 class Graph

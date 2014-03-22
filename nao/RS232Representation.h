@@ -15,12 +15,21 @@
 #endif
 
 #include <vector>
+#include <iostream>
 
 REPRESENTATION(RS232Representation)
 class RS232Representation: public RS232RepresentationBase
 {
   public:
     std::vector<float> pfInputs;
+
+    void draw() const
+    {
+      for (std::vector<float>::const_iterator iter = pfInputs.begin(); iter != pfInputs.end();
+          ++iter)
+        std::cout << *iter << " ";
+      std::cout << std::endl;
+    }
 };
 
 #endif /* RS232REPRESENTATION_H_ */

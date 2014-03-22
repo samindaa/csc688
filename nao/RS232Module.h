@@ -21,6 +21,7 @@
 #include <sstream>
 #include <cstdlib>
 
+#include "../FloatDetails.h"
 #include "RS232Representation.h"
 
 MODULE(RS232Module)
@@ -39,7 +40,6 @@ class RS232Module: public RS232ModuleBase
     unsigned char buf[BUF_SIZE];
     int cPointer;
     bool parserEOR;
-    int burnoutPeriod;
   public:
     RS232Module();
     void init();
