@@ -48,7 +48,11 @@ In order to compile the project:
     5. Change directory to *build*.
     4. Execute the binary *viz*.
 
-## Platform (TODO)
+## Platform
+
+Following figure shows an example of modules and representations available as at (03/24/2014):
+
+![](http://web.cs.miami.edu/home/saminda/tmp/graph_structure.png)
 
 ## Contact
 
