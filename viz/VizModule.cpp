@@ -9,8 +9,8 @@
 
 void VizQObject::init()
 {
-  std::vector<Plot*>& objs = VizObject::getInstance().getObjects();
-  for (std::vector<Plot*>::iterator iter = objs.begin(); iter != objs.end(); ++iter)
+  std::vector<QObject*>& objs = VizObject::getInstance().getObjects();
+  for (std::vector<QObject*>::iterator iter = objs.begin(); iter != objs.end(); ++iter)
     connect(this, SIGNAL(signals_draw(const std::vector<float>&)), *iter,
         SLOT(slots_draw(const std::vector<float>&)));
 }

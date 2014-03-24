@@ -9,16 +9,16 @@
 #define VIZOBJECT_H_
 
 #include <vector>
-#include "Plot.h"
+#include <QObject>
 
 class VizObject
 {
   private:
-    std::vector<Plot*> objects;
+    std::vector<QObject*> objects;
   public:
     static VizObject& getInstance();
-    void push_back(Plot* obj);
-    std::vector<Plot*>& getObjects();
+    void push_back(QObject* obj);
+    std::vector<QObject*>& getObjects();
 
   protected:
     VizObject();

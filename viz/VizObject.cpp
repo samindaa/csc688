@@ -22,12 +22,12 @@ VizObject& VizObject::getInstance()
   return theInstance;
 }
 
-void VizObject::push_back(Plot* obj)
+void VizObject::push_back(QObject* obj)
 {
   objects.push_back(obj);
 }
 
-std::vector<Plot*>& VizObject::getObjects()
+std::vector<QObject*>& VizObject::getObjects()
 {
   return objects;
 }
