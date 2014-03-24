@@ -3,5 +3,5 @@
 ./configure target="csc688" \
                cflags="-I. -I./offline -DOFFLINE  -ggdb -Wno-deprecated -fPIC" \
                lflags="" \
-               ignore="" \
-               bin="build/csc688_offline"
+               ignore="'viz/*'" \
+               bin="build/offline_csc688"

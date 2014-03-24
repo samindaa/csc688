@@ -112,4 +112,4 @@ void SHT21Module::update(SHT21Representation& theSHT21Representation)
 #endif
 }
 
-MAKE_MODULE(SHT21Module)
+//MAKE_MODULE(SHT21Module)

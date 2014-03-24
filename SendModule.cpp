@@ -11,15 +11,15 @@ void SendModule::execute()
 {
 #if defined(ENERGIA)
   // Write the
-  floatToBytes(theMPU9150Representation->fAccelX);
-  floatToBytes(theMPU9150Representation->fAccelY);
-  floatToBytes(theMPU9150Representation->fAccelZ);
-  floatToBytes(theMPU9150Representation->fGyroX);
-  floatToBytes(theMPU9150Representation->fGyroY);
-  floatToBytes(theMPU9150Representation->fGyroZ);
-  floatToBytes(theMPU9150Representation->fMagnetoX);
-  floatToBytes(theMPU9150Representation->fMagnetoY);
-  floatToBytes(theMPU9150Representation->fMagnetoZ);
+  //floatToBytes(theMPU9150Representation->fAccelX);
+  //floatToBytes(theMPU9150Representation->fAccelY);
+  //floatToBytes(theMPU9150Representation->fAccelZ);
+  //floatToBytes(theMPU9150Representation->fGyroX);
+  //floatToBytes(theMPU9150Representation->fGyroY);
+  //floatToBytes(theMPU9150Representation->fGyroZ);
+  //floatToBytes(theMPU9150Representation->fMagnetoX);
+  //floatToBytes(theMPU9150Representation->fMagnetoY);
+  //floatToBytes(theMPU9150Representation->fMagnetoZ);
   floatToBytes(theMPU9150Representation->fRoll);
   floatToBytes(theMPU9150Representation->fPitch);
   floatToBytes(theMPU9150Representation->fYaw);
