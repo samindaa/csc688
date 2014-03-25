@@ -28,25 +28,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "comp_dcm.h"
+#include "Assert.h"
 
-//*****************************************************************************
-//
-// The ASSERT macro, which does the actual assertion checking.  Typically, this
-// will be for procedure arguments.
-//
-//*****************************************************************************
-#ifdef DEBUG
-#define ASSERT(expr) do                                                       \
-                     {                                                        \
-                         if(!(expr))                                          \
-                         {                                                    \
-                             __error__(__FILE__, __LINE__);                   \
-                         }                                                    \
-                     }                                                        \
-                     while(0)
-#else
-#define ASSERT(expr)
-#endif
 
 //*****************************************************************************
 //
