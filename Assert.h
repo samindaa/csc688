@@ -22,7 +22,7 @@
 #endif
 
 #if defined(NDEBUG)
-#define ASSERT(e)   ((void)0)
+#define ASSERT(expr)   ((void)0)
 #else
 #define ASSERT(expr) do                                                       \
                      {                                                        \
@@ -37,7 +37,11 @@
 #if defined(ENERGIA)
 static inline void __ASSERT(const char *__func, const char *__file, int __lineno, const char *__sexp)
 {
-  // TODO: write the error to serial port
+  do
+  {
+    // TODO: write the error to serial port
+  }
+  while(true);
 }
 #else
 
