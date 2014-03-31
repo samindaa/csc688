@@ -9,12 +9,12 @@
 
 void TestModule1::update(TestRepresentation1& theTestRepresentation1)
 {
-  theTestRepresentation1.blinkfast = theTestRepresentation1.blinkslow = false;
+  theTestRepresentation1.leftButton = theTestRepresentation1.rightButton = false;
 #if defined(ENERGIA)
   if (digitalRead(PUSH1) == LOW)
-    theTestRepresentation1.blinkslow = true;
+    theTestRepresentation1.leftButton = true;
   if (digitalRead(PUSH2) == LOW)
-    theTestRepresentation1.blinkfast = true;
+    theTestRepresentation1.rightButton = true;
 #endif
 }
 

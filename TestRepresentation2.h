@@ -14,9 +14,9 @@ REPRESENTATION(TestRepresentation2)
 class TestRepresentation2: public TestRepresentation2Base
 {
   public:
-    float ulTempValueC;
+    bool collectData;
     TestRepresentation2() :
-        ulTempValueC(0)
+      collectData(0)
     {
     }
 };

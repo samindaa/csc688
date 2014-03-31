@@ -8,7 +8,7 @@
 #include "TestModule2.h"
 
 TestModule2::TestModule2() :
-    ledState(0x01), prevTime(0)
+    ledState(0x01), prevTime(0), collectData(false)
 {
 }
 
@@ -22,10 +22,17 @@ void TestModule2::execute()
     ledState ^= HIGH;
   }
 
-  if (theTestRepresentation1->blinkslow)
-    blinkslow();
-  else if (theTestRepresentation1->blinkfast)
-    blinkfast();
+  if (theTestRepresentation1->rightButton)
+    collectData = true;
+  else if (theTestRepresentation1->leftButton)
+    collectData = false;
+
+  if (collectData)
+  {
+    digitalWrite(RED_LED, ledState);
+    digitalWrite(GREEN_LED, ledState);
+    digitalWrite(BLUE_LED, ledState);
+  }
   else if (theISL29023Representation->fAmbient < 10) // dark
   {
     digitalWrite(RED_LED, ledState);
@@ -42,39 +49,9 @@ void TestModule2::execute()
 
 }
 
-void TestModule2::blinkfast()
+void TestModule2::update(TestRepresentation2& theTestRepresentation2)
 {
-#if defined(ENERGIA)
-  for (int i = 0; i < 10; i++)
-  {
-    digitalWrite(RED_LED, HIGH);
-    delay(250);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, HIGH);
-    delay(250);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, HIGH);
-    delay(250);
-    digitalWrite(BLUE_LED, LOW);
-  }
-#endif
-}
-void TestModule2::blinkslow()
-{
-#if defined(ENERGIA)
-  for (int i = 0; i < 5; i++)
-  {
-    digitalWrite(RED_LED, HIGH);
-    delay(1000);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, HIGH);
-    delay(1000);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, HIGH);
-    delay(1000);
-    digitalWrite(BLUE_LED, LOW);
-  }
-#endif
+  theTestRepresentation2.collectData = collectData;
 }
 
 MAKE_MODULE(TestModule2)

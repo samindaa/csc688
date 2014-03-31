@@ -12,9 +12,11 @@
 #include "FloatDetails.h"
 
 // Sending representations
+#include "TestRepresentation2.h"
 #include "MPU9150Representation.h"
 
 MODULE(SendModule)
+  REQUIRES(TestRepresentation2) //
   REQUIRES(MPU9150Representation)
 END_MODULE
 class SendModule: public SendModuleBase

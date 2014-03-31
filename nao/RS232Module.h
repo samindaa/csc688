@@ -38,9 +38,9 @@ class RS232Module: public RS232ModuleBase
     };
 
     unsigned char buf[BUF_SIZE];
-    int cPointer; //
     bool parserEOR; //
-    bool activeComport;
+    bool active;
+    std::stringstream ss;
   public:
     RS232Module();
     void init();

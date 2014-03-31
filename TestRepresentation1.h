@@ -14,9 +14,9 @@ REPRESENTATION(TestRepresentation1)
 class TestRepresentation1: public TestRepresentation1Base
 {
 public:
-  bool blinkfast, blinkslow;
+  bool rightButton, leftButton;
   TestRepresentation1() :
-    blinkfast(false), blinkslow(false)
+    rightButton(false), leftButton(false)
   {
   }
 };
