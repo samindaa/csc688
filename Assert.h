@@ -41,7 +41,7 @@ static inline void __ASSERT(const char *__func, const char *__file, int __lineno
   {
     // TODO: write the error to serial port
   }
-  while(true);
+  while(0);
 }
 #else
 
