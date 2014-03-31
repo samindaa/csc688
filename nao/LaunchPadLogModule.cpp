@@ -7,14 +7,35 @@
 
 #include "LaunchPadLogModule.h"
 
+LaunchPadLogModule::LaunchPadLogModule()
+{
+}
+
+LaunchPadLogModule::~LaunchPadLogModule()
+{
+  ofs.close();
+}
+
+void LaunchPadLogModule::init()
+{
+  ofs.open("forward.txt", std::ios::out | std::ios::app);
+}
+
 void LaunchPadLogModule::execute()
 {
-  if (true/*Just to test*/ && !theRS232Representation->pfInputs.empty()) // This is test mode
+  if (!theRS232Representation->pfInputs.empty()) // This is test mode
   {
-    for (std::vector<float>::const_iterator iter = theRS232Representation->pfInputs.begin();
-        iter != theRS232Representation->pfInputs.end(); ++iter)
-      std::cout << *iter << " ";
-    std::cout << std::endl;
+    if (ofs.is_open())
+    {
+#if defined(TARGET_NAO)
+      ofs << theFrameInfo->time_ms << " ";
+#endif
+      for (std::vector<float>::const_iterator iter = theRS232Representation->pfInputs.begin();
+          iter != theRS232Representation->pfInputs.end(); ++iter)
+        ofs << *iter << " ";
+      ofs << "\n";
+      ofs.flush();
+    }
   }
 }
 
