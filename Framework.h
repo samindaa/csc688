@@ -22,7 +22,7 @@
 /**
  * This framework creates a topologically sorted graph from computational and representational units
  * created by the user. Since, the framework needs to be run on a MCU, the size (in bytes) of the
- * framework is minimized. At most 255 nodes can be allocated within the framework.
+ * framework is minimized from its original version.
  */
 
 /**
@@ -32,8 +32,8 @@ template<typename T>
 class Vector
 {
 private:
-  uint8_t theSize;
-  uint8_t theCapacity;
+  uint32_t theSize;
+  uint32_t theCapacity;
   T* objects;
 
 public:
@@ -65,7 +65,7 @@ public:
       theCapacity = that.theCapacity;
 
       objects = (T*)malloc(capacity() * sizeof(T));
-      for (uint8_t k = 0; k < size(); k++)
+      for (uint32_t k = 0; k < size(); k++)
         objects[k] = that.objects[k];
 
     }
@@ -73,14 +73,14 @@ public:
     return *this;
   }
 
-  void resize(uint8_t newSize)
+  void resize(uint32_t newSize)
   {
     if (newSize > theCapacity)
       reserve(newSize * 2 + 1);
     theSize = newSize;
   }
 
-  void reserve(uint8_t newCapacity)
+  void reserve(uint32_t newCapacity)
   {
     if (newCapacity < theSize)
       return;
@@ -88,7 +88,7 @@ public:
     T *oldArray = objects;
 
     objects =  (T*)malloc(newCapacity * sizeof(T));
-    for (uint8_t k = 0; k < theSize; k++)
+    for (uint32_t k = 0; k < theSize; k++)
       objects[k] = oldArray[k];
 
     theCapacity = newCapacity;
@@ -97,11 +97,11 @@ public:
      free(oldArray);
   }
 
-  T& operator[](uint8_t index) { return objects[index]; }
-  const T& operator[](uint8_t index) const { return objects[index]; }
+  T& operator[](uint32_t index) { return objects[index]; }
+  const T& operator[](uint32_t index) const { return objects[index]; }
   bool empty() const { return size() == 0;  }
-  uint8_t size() const { return theSize; }
-  uint8_t capacity() const { return theCapacity; }
+  uint32_t size() const { return theSize; }
+  uint32_t capacity() const { return theCapacity; }
 
   void push_back(T x)
   {
@@ -113,9 +113,9 @@ public:
   const T& front() const { return objects[0]; }
   T& front() { return objects[0]; }
 
-  void erase(uint8_t index)
+  void erase(uint32_t index)
   {
-    for (uint8_t i = index; i < size() - 1; ++i)    // for each item that follows 'index'
+    for (uint32_t i = index; i < size() - 1; ++i)    // for each item that follows 'index'
       objects[i] = objects[i + 1];            // shift the item down one slot in memory
     --theSize;
   }
@@ -144,7 +144,7 @@ class Node
     NodeVector nextNodes;
     NodeVector auxiliaryNodes;
     Node* previousNode;
-    uint8_t inDegrees;
+    uint32_t inDegrees;
     bool initialized;
     bool computationNode;
 
@@ -168,7 +168,7 @@ class Node
     NodeVector& getAuxiliaryNodes()                           { return auxiliaryNodes; }
     void operator++()                                         { inDegrees++;  }
     void operator--()                                         { inDegrees--; }
-    uint8_t getInDegrees()                              const { return inDegrees; }
+    uint32_t getInDegrees()                              const { return inDegrees; }
     virtual const char* getName() const =0;
 };
 
@@ -222,7 +222,6 @@ class Graph
     typedef Vector<ModuleEntry*> ModuleVector;
     typedef Vector<RepresentationEntry*> RepresentationVector;
     typedef Vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    //typedef Vector<uint8_t> InDegreesVector;
     typedef Vector<Node*> GraphStructureVector;
     ModuleVector moduleVector;
     RepresentationVector representationVector;
@@ -312,7 +311,7 @@ class RepresentationRequierer
     const T* operator->() const { return getRepresentation(); }
     const T& operator*()  const { return *(getRepresentation()); }
     operator const T*()   const { return getRepresentation(); }
-    const bool isNull()   const { return (getRepresentation() == 0); }
+    bool isNull()         const { return (getRepresentation() == 0); }
 
 };
 
@@ -334,7 +333,7 @@ class RepresentationUser
     const T* operator->() const { return getRepresentation(); }
     const T& operator*()  const { return *(getRepresentation()); }
     operator const T*()   const { return getRepresentation(); }
-    const bool isNull()   const { return (getRepresentation() == 0); }
+    bool isNull()         const { return (getRepresentation() == 0); }
 
 };
 
