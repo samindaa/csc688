@@ -50,7 +50,7 @@ void PredictionModule::init()
   RLLib::Probabilistic<float>::srand(0);
 
   nbTrainingSample = 0;
-  nbMaxTrainingSamples = 50;
+  nbMaxTrainingSamples = 1000;
   x = new RLLib::PVector<float>(3);
   x->setEntry(0, 1); // bias
   predictor = new RLLib::SemiLinearIDBD<float>(x->dimension(), 1e-4 / x->dimension());

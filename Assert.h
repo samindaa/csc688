@@ -28,30 +28,24 @@
                      {                                                        \
                          if(!(expr))                                          \
                          {                                                    \
-                             __ASSERT(__func__, __FILE__, __LINE__, #expr);   \
+                             __ASSERT(__func__, __FILE__, __LINE__, #expr)    \
                          }                                                    \
                      }                                                        \
                      while(0)
 #endif /* NDEBUG */
 
 #if defined(ENERGIA)
-static inline void __ASSERT(const char *__func, const char *__file, int __lineno, const char *__sexp)
-{
-  do
-  {
-    // TODO: write the error to serial port
-  }
+#define __ASSERT(__func, __file, __lineno, __sexp)                                         \
+  do                                                                                       \
+  {                                                                                        \
+      /*TODO: FixMe*/                                                                      \
+  }                                                                                        \
   while(0);
-}
 #else
 
-static inline void __ASSERT(const char *__func, const char *__file, int __lineno,
-    const char *__sexp)
-{
-  printf("Failed assertion! __func=%s __file=%s  __lineno=%u __sexp=%s \n", __func, __file,
-      __lineno, __sexp);
+#define __ASSERT(__func, __file, __lineno, __sexp)                                                              \
+  printf("Failed assertion! __func=%s __file=%s  __lineno=%u __sexp=%s \n", __func, __file, __lineno, __sexp);  \
   abort();
-}
 #endif
 
 #endif /* CUSTOM_ASSERT_H_ */
