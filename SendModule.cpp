@@ -22,9 +22,11 @@ void SendModule::execute()
     //floatToBytes(theMPU9150Representation->fMagnetoX);
     //floatToBytes(theMPU9150Representation->fMagnetoY);
     //floatToBytes(theMPU9150Representation->fMagnetoZ);
-    floatToBytes(theMPU9150Representation->fRoll);
-    floatToBytes(theMPU9150Representation->fPitch);
-    floatToBytes(theMPU9150Representation->fYaw);
+    //floatToBytes(theMPU9150Representation->fRoll);
+    //floatToBytes(theMPU9150Representation->fPitch);
+    //floatToBytes(theMPU9150Representation->fYaw);
+    floatToBytes(thePredictionRepresentation->target);
+    floatToBytes(thePredictionRepresentation->prediction);
   }
   Serial.println("|"); // This is the end of the stream
 #endif

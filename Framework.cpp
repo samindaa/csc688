@@ -485,20 +485,20 @@ void Graph::stream()
   if (graph.is_open())
   {
     graph << "digraph G {\n";
-    graph << "\t node [shape=box, color=lightblue2, style=filled]; ";
+    graph << "\t node [shape=box, fillcolor=\"green:yellow\", style=filled, gradientangle=270]; \n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       const Node* x = graphOutput[iter];
       if (x->isComputationNode())
-      graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; \n";
     }
     graph << "\n";
-    graph << "\t node [shape=ellipse, color=lightpink, style=filled]; ";
+    graph << "\t node [shape=ellipse, fillcolor=\"gold:yellow\", style=filled, gradientangle=270]; \n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       Node* x = graphOutput[iter];
       if (!x->isComputationNode())
-      graph << " " << x->getName() << "; ";
+      graph << " " << x->getName() << "; \n";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
@@ -510,7 +510,7 @@ void Graph::stream()
         {
           Node* y = x->getNextNodes()[j];
           if (y->isComputationNode())
-          graph << "edge [color=green]; \n";
+          graph << "edge [color=black]; \n";
           else
           graph << "edge [color=blue]; \n";
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";

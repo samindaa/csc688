@@ -71,7 +71,7 @@ class Probabilistic
     }
 
     // [0 .. size)
-    inline static int nextInt(const int& size)
+    inline static T nextValue(const int& size)
     {
       return rand() % size;
     }

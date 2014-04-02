@@ -9,18 +9,23 @@
 #define PREDICTIONMODULE_H_
 
 #include "Template.h"
-#include "ISL29023Representation.h"
+//#include "ISL29023Representation.h"
+#include "PredictionRepresentation.h"
 #include "SupervisedAlgorithm.h"
 #include "ControlAlgorithm.h"
 #include "RL.h"
 #include "Projector.h"
 
 MODULE(PredictionModule)
+  PROVIDES(PredictionRepresentation) //
 END_MODULE
 class PredictionModule: public PredictionModuleBase
 {
   private:
     // Supervised Learning
+    int nbTrainingSample;
+    int nbMaxTrainingSamples;
+    RLLib::Vector<float>* x;
     RLLib::SemiLinearIDBD<float>* predictor;
 
     // Reinforcement Learning
@@ -45,6 +50,7 @@ class PredictionModule: public PredictionModuleBase
     ~PredictionModule();
     void init();
     void execute();
+    void update(PredictionRepresentation& thePredictionRepresentation);
 };
 
 #endif /* PREDICTIONMODULE_H_ */

@@ -42,8 +42,8 @@ void TestModule2::execute()
   else
   {
     digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, ledState);
-    digitalWrite(BLUE_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, ledState);
   }
 #endif
 

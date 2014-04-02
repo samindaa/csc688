@@ -19,8 +19,8 @@ END_MODULE
 
 class TestModule1: public TestModule1Base
 {
-public:
-  void update(TestRepresentation1& theTestRepresentation1);
+  public:
+    void update(TestRepresentation1& theTestRepresentation1);
 };
 
 #endif /* TESTMODULE1_H_ */

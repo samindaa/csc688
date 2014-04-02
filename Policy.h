@@ -698,7 +698,7 @@ class EpsilonGreedy: public Greedy<T>
     const Action<T>* sampleAction()
     {
       if (Probabilistic<T>::nextReal() < epsilon)
-        return Greedy<T>::actions->at(Probabilistic<T>::nextInt(Greedy<T>::actions->dimension()));
+        return Greedy<T>::actions->at(Probabilistic<int>::nextValue(Greedy<T>::actions->dimension()));
       else
         return Greedy<T>::bestAction;
     }
