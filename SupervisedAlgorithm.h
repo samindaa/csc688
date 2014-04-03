@@ -75,7 +75,7 @@ class Adaline: public LearningAlgorithm<T>, public LinearLearner<T>
       w->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return w;
     }
@@ -152,7 +152,7 @@ class IDBD: public LearningAlgorithm<T>, public LinearLearner<T>
       w->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return w;
     }
@@ -230,7 +230,7 @@ class SemiLinearIDBD: public LearningAlgorithm<T>, public LinearLearner<T>
       w->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return w;
     }
@@ -336,7 +336,7 @@ class K1: public LearningAlgorithm<T>, public LinearLearner<T>
       w->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return w;
     }
@@ -431,7 +431,7 @@ class Autostep: public LearningAlgorithm<T>, public LinearLearner<T>
       w->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return w;
     }

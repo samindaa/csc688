@@ -94,7 +94,7 @@ class TD: public OnPolicyTD<T>
       v->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return v;
     }
@@ -327,7 +327,7 @@ class Sarsa: public Predictor<T>, public LinearLearner<T>
       q->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return q;
     }
@@ -509,7 +509,7 @@ class GQ: public Predictor<T>, public LinearLearner<T>
       v->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return v;
     }
@@ -609,7 +609,7 @@ class GTDLambda: public OnPolicyTD<T>, public GVF<T>
       v->resurrect(f);
     }
 
-    const Vector<T>* weights() const
+    Vector<T>* weights() const
     {
       return v;
     }
