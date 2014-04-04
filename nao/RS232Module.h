@@ -25,7 +25,7 @@
 #include "RS232Representation.h"
 
 MODULE(RS232Module)
-  PROVIDES(RS232Representation)
+  PROVIDES(RS232Representation) //
 END_MODULE
 class RS232Module: public RS232ModuleBase
 {
@@ -37,8 +37,8 @@ class RS232Module: public RS232ModuleBase
       BUF_SIZE = 512
     };
 
-    unsigned char buf[BUF_SIZE];
-    bool parserEOR; //
+    unsigned char buf[BUF_SIZE]; //
+    bool pSOF; //
     bool active;
     std::stringstream ss;
   public:

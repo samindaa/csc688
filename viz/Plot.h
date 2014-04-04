@@ -22,7 +22,7 @@ protected:
   QCustomPlot* plot;
   QVector<double> x;
 
-  static const int nbPlots = 10;
+  int nbPlots;
   std::vector<QVector<double> > yValues;
   std::vector<Qt::GlobalColor> globalColors;
 

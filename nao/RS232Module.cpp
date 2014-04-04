@@ -8,7 +8,7 @@
 #include "RS232Module.h"
 
 RS232Module::RS232Module() :
-    cport_nr(24 /* /dev/ttyS0 (COM1 on windows) */), bdrate(115200), parserEOR(false), active(false)
+    cport_nr(24 /* /dev/ttyS0 (COM1 on windows) */), bdrate(115200), pSOF(false), active(false)
 {
 }
 
@@ -42,40 +42,57 @@ void RS232Module::update(std::vector<float>& pfInputs)
   int n = RS232_PollComport(cport_nr, buf, BUF_SIZE - 1);
   if (n > 0)
   {
-    buf[n] = 0; /* always put a "null" at the end of a string! */
+    buf[n] = 0;
     for (int i = 0; i < n; i++)
     {
-      if ((buf[i] >= 0x20) && (buf[i] < 0x7F)) /* replace unreadable control-codes by dots */
+      if ((buf[i] >= 0x20) && (buf[i] < 0x7F)) /* TEXT */
       {
-        if (buf[i] == '|')
+        if (buf[i] == '{')
         {
-          parserEOR = true;
-          break;
+          // Start of the stream
+          pSOF = true;
+          ss.clear();
+        }
+        else if (buf[i] == '}')
+        {
+          // Potential end has reached
+          if (pSOF)
+          {
+            pSOF = false;
+            pfInputs.clear(); //<< most recent reading
+            std::istream_iterator<std::string> begin(ss);
+            std::istream_iterator<std::string> end;
+            std::vector<std::string> psInputs(begin, end);
+            if (psInputs.size() % 2 == 0)
+            {
+              for (size_t i = 0; i < psInputs.size(); i += 2)
+              {
+                int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
+                int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
+                pfInputs.push_back(FloatDetails(mantissa, exp));
+              }
+            }
+          }
         }
         else
-          ss << buf[i];
+        {
+          // Collect data
+          if (pSOF)
+            ss << buf[i];
+        }
+
       }
     }
     //printf("received %i bytes: %s\n", n, (char *) buf);
   }
 
-  if (parserEOR)
-  {
-    parserEOR = false;
-    std::istream_iterator<std::string> begin(ss);
-    std::istream_iterator<std::string> end;
-    std::vector<std::string> psInputs(begin, end);
-    if (psInputs.size() % 2 == 0)
-    {
-      for (size_t i = 0; i < psInputs.size(); i += 2)
-      {
-        int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
-        int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
-        pfInputs.push_back(FloatDetails(mantissa, exp));
-      }
-    }
-    ss.clear();
-  }
+  // debug
+  /*if (!pfInputs.empty())
+   {
+   for (std::vector<float>::iterator iter = pfInputs.begin(); iter != pfInputs.end(); ++iter)
+   std::cout << *iter << " ";
+   std::cout << std::endl;
+   }*/
 }
 
 MAKE_MODULE(RS232Module)

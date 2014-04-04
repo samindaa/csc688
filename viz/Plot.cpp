@@ -8,7 +8,7 @@
 #include "Plot.h"
 
 Plot::Plot(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent), nbPlots(10)
 {
   grid = new QHBoxLayout(this);
   plot = new QCustomPlot(this);
