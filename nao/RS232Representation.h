@@ -14,14 +14,17 @@
 #include "../Template.h"
 #endif
 
+#include <map>
 #include <vector>
-#include <iostream>
 
 REPRESENTATION(RS232Representation)
 class RS232Representation: public RS232RepresentationBase
 {
   public:
-    std::vector<float> pfInputs;
+    // There may be multiple reading per cycle,
+    // if the host machine is fast.
+    typedef std::map<size_t, std::vector<float> > Inputs;
+    Inputs pfInputs;
 };
 
 #endif /* RS232REPRESENTATION_H_ */

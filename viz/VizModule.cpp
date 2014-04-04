@@ -33,8 +33,9 @@ void VizModule::init()
 
 void VizModule::execute()
 {
-  if (!theRS232Representation->pfInputs.empty())
-    vizObject->update(theRS232Representation->pfInputs);
+  for (RS232Representation::Inputs::const_iterator iter = theRS232Representation->pfInputs.begin();
+      iter != theRS232Representation->pfInputs.end(); ++iter)
+    vizObject->update(iter->second);
 }
 
 MAKE_MODULE(VizModule)

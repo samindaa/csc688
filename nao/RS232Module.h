@@ -51,7 +51,7 @@ class RS232Module: public RS232ModuleBase
 #endif
 
   private:
-    void update(std::vector<float>& pfInputs);
+    void update(RS232Representation::Inputs& pfInputs);
 };
 
 #endif /* RS232MODULE_H_ */

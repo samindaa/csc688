@@ -30,9 +30,14 @@ void LaunchPadLogModule::execute()
 #if defined(TARGET_NAO)
       ofs << theFrameInfo->time_ms << " ";
 #endif
-      for (std::vector<float>::const_iterator iter = theRS232Representation->pfInputs.begin();
-          iter != theRS232Representation->pfInputs.end(); ++iter)
-        ofs << *iter << " ";
+      for (RS232Representation::Inputs::const_iterator iter =
+          theRS232Representation->pfInputs.begin(); iter != theRS232Representation->pfInputs.end();
+          ++iter)
+      {
+        for (std::vector<float>::const_iterator iter2 = iter->second.begin();
+            iter2 != iter->second.end(); ++iter2)
+          ofs << *iter2 << " ";
+      }
       ofs << "\n";
       ofs.flush();
     }

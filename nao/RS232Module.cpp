@@ -36,7 +36,7 @@ void RS232Module::update(RS232Representation& theRS232Representation)
 }
 #endif
 
-void RS232Module::update(std::vector<float>& pfInputs)
+void RS232Module::update(RS232Representation::Inputs& pfInputs)
 {
   pfInputs.clear();
   int n = RS232_PollComport(cport_nr, buf, BUF_SIZE - 1);
@@ -63,15 +63,14 @@ void RS232Module::update(std::vector<float>& pfInputs)
             std::istream_iterator<std::string> begin(ss);
             std::istream_iterator<std::string> end;
             std::vector<std::string> psInputs(begin, end);
-            if (psInputs.size() % 2 == 0)
+            std::vector<float> fInputs;
+            for (size_t i = 0; i < psInputs.size(); i += 2)
             {
-              for (size_t i = 0; i < psInputs.size(); i += 2)
-              {
-                int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
-                int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
-                pfInputs.push_back(FloatDetails(mantissa, exp));
-              }
+              int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
+              int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
+              fInputs.push_back(FloatDetails(mantissa, exp));
             }
+            pfInputs.insert(std::make_pair(pfInputs.size(), fInputs));
           }
         }
         else
@@ -87,12 +86,14 @@ void RS232Module::update(std::vector<float>& pfInputs)
   }
 
   // debug
-  /*if (!pfInputs.empty())
+  /*for (RS232Representation::Inputs::iterator iter = pfInputs.begin(); iter != pfInputs.end();
+   ++iter)
    {
-   for (std::vector<float>::iterator iter = pfInputs.begin(); iter != pfInputs.end(); ++iter)
-   std::cout << *iter << " ";
-   std::cout << std::endl;
-   }*/
+   for (std::vector<float>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end();
+   ++iter2)
+   std::cout << *iter2 << " ";
+   }
+   std::cout << std::endl;*/
 }
 
 MAKE_MODULE(RS232Module)
