@@ -18,7 +18,7 @@ LaunchPadLogModule::~LaunchPadLogModule()
 
 void LaunchPadLogModule::init()
 {
-  ofs.open("forward.txt", std::ios::out | std::ios::app);
+  ofs.open("NAO_dataset.txt", std::ios::out | std::ios::app);
 }
 
 void LaunchPadLogModule::execute()
@@ -28,18 +28,26 @@ void LaunchPadLogModule::execute()
     if (ofs.is_open())
     {
 #if defined(TARGET_NAO)
-      ofs << theFrameInfo->time_ms << " ";
+      if (theGroundContactState->contact && theWalkingEngineOutput->testingNextParameterSet > 0)
 #endif
-      for (RS232Representation::Inputs::const_iterator iter =
-          theRS232Representation->pfInputs.begin(); iter != theRS232Representation->pfInputs.end();
-          ++iter)
       {
-        for (std::vector<float>::const_iterator iter2 = iter->second.begin();
-            iter2 != iter->second.end(); ++iter2)
-          ofs << *iter2 << " ";
+#if defined(TARGET_NAO)
+        ofs << theFrameInfo->time_ms << " ";
+#endif
+        for (RS232Representation::Inputs::const_iterator iter =
+            theRS232Representation->pfInputs.begin();
+            iter != theRS232Representation->pfInputs.end(); ++iter)
+        {
+          for (std::vector<float>::const_iterator iter2 = iter->second.begin();
+              iter2 != iter->second.end(); ++iter2)
+            ofs << *iter2 << " ";
+        }
+#if defined(TARGET_NAO)
+        ofs << theWalkingEngineOutput->testingNextParameterSet;
+#endif
+        ofs << "\n";
+        ofs.flush();
       }
-      ofs << "\n";
-      ofs.flush();
     }
   }
 }

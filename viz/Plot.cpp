@@ -8,7 +8,7 @@
 #include "Plot.h"
 
 Plot::Plot(QWidget *parent) :
-    QWidget(parent), nbPlots(10)
+    QWidget(parent)
 {
   grid = new QHBoxLayout(this);
   plot = new QCustomPlot(this);
@@ -20,20 +20,28 @@ Plot::Plot(QWidget *parent) :
   for (int i = 0; i < x.size(); i++)
     x[i] = i;
 
-  globalColors.push_back(Qt::red);
-  globalColors.push_back(Qt::green);
-  globalColors.push_back(Qt::blue);
-  globalColors.push_back(Qt::cyan);
-  globalColors.push_back(Qt::magenta);
+  nbPlots.push_back(Qt::lightGray);
+  nbPlots.push_back(Qt::red);
+  nbPlots.push_back(Qt::green);
+  nbPlots.push_back(Qt::blue);
 
-  globalColors.push_back(Qt::darkRed);
-  globalColors.push_back(Qt::darkGreen);
-  globalColors.push_back(Qt::darkBlue);
-  globalColors.push_back(Qt::darkCyan);
-  globalColors.push_back(Qt::darkMagenta);
+  nbPlots.push_back(Qt::black);
+  nbPlots.push_back(Qt::darkRed);
+  nbPlots.push_back(Qt::darkGreen);
+  nbPlots.push_back(Qt::darkBlue);
+
+  nbPlots.push_back(Qt::cyan);
+  nbPlots.push_back(Qt::magenta);
+  nbPlots.push_back(Qt::yellow);
+  nbPlots.push_back(Qt::gray);
+
+  nbPlots.push_back(Qt::darkCyan);
+  nbPlots.push_back(Qt::darkMagenta);
+  nbPlots.push_back(Qt::darkYellow);
+  nbPlots.push_back(Qt::darkGray);
 
   // Up-to-4 graphs
-  for (int i = 0; i < nbPlots; i++)
+  for (int i = 0; i < (int) nbPlots.size(); i++)
   {
     yValues.push_back(QVector<double>());
     yValues[i].resize(sizeHint().width());
@@ -42,14 +50,14 @@ Plot::Plot(QWidget *parent) :
   }
 
   // create graph and assign data to it:
-  for (int i = 0; i < nbPlots; i++)
+  for (int i = 0; i < (int) nbPlots.size(); i++)
+  {
     plot->addGraph();
+    plot->graph(i)->setPen(QPen(nbPlots[i]));
+  }
 
-  for (int i = 0; i < nbPlots; i++)
-    plot->graph(i)->setPen(QPen(globalColors[i]));
-
-  plot->xAxis->setLabel("X");
-  plot->yAxis->setLabel("Y");
+  plot->xAxis->setLabel("Time");
+  plot->yAxis->setLabel("Values");
   setLayout(grid);
 }
 
@@ -59,6 +67,9 @@ Plot::~Plot()
 
 void Plot::slots_draw(const std::vector<float>& pfInput)
 {
+  for (int i = 1; i < x.size(); i++)
+    x[i - 1] = x[i];
+  ++x[x.size() - 1];
   // O(N)
   for (size_t i = 0; i < yValues.size(); i++)
   {
@@ -66,12 +77,13 @@ void Plot::slots_draw(const std::vector<float>& pfInput)
       yValues[i][j - 1] = yValues[i][j];
   }
 
-  for (int i = 0; i < std::min((int) pfInput.size(), nbPlots); i++)
+  for (int i = 0; i < std::min((int) pfInput.size(), (int) nbPlots.size()); i++)
   {
     yValues[i][yValues[i].size() - 1] = pfInput[i];
     plot->graph(i)->setData(x, yValues[i]);
     plot->graph(i)->rescaleAxes();
   }
+  plot->xAxis->setRange(x[0], x[x.size() - 1]);
   plot->rescaleAxes();
   plot->replot();
 }

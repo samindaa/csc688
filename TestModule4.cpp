@@ -7,7 +7,6 @@
 
 #include "TestModule4.h"
 #include "Matrix.h"
-#include "Math.h"
 
 #include <stdlib.h>
 
@@ -21,15 +20,27 @@ float w[N];
 
 int max = 10;  // maximum random matrix entry range
 
+TestModule4::TestModule4() :
+    random(0)
+{
+}
+
+TestModule4::~TestModule4()
+{
+  if (random)
+    delete random;
+}
+
 void TestModule4::init()
 {
   // Initialize matrices
+  random = new RLLib::Random<float>;
   for (int i = 0; i < N; i++)
   {
     v[i] = i + 1;                    // vector of sequential numbers
     for (int j = 0; j < N; j++)
     {
-      A[i][j] = RLLib::Probabilistic<float>::nextValue(max) - max / 2.0f;  // A is random
+      A[i][j] = (float) random->nextInt(max) - ((float) max) / 2.0f;  // A is random
       if (i == j)
       {
         B[i][j] = 1.0f;                  // B is identity

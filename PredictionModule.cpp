@@ -8,15 +8,17 @@
 #include "PredictionModule.h"
 
 PredictionModule::PredictionModule() :
-    nbTrainingSample(0), nbMaxTrainingSamples(0), x(0), predictor(0), epsilon(0), problem(0), hashing(
-        0), projector(0), toStateAction(0), e(0), alpha(0), gamma(0), lambda(0), sarsa(0), acting(
-        0), control(0), agent(0), sim(0)
+    nbTrainingSample(0), nbMaxTrainingSamples(0), random(0), x(0), predictor(0), epsilon(0), problem(
+        0), hashing(0), projector(0), toStateAction(0), e(0), alpha(0), gamma(0), lambda(0), sarsa(
+        0), acting(0), control(0), agent(0), sim(0)
 {
 
 }
 
 PredictionModule::~PredictionModule()
 {
+  if (random)
+    delete random;
   if (x)
     delete x;
   if (predictor)
@@ -47,7 +49,6 @@ void PredictionModule::init()
 {
   //predictor->initialize();
   //control->persist("foo.dat");
-  RLLib::Probabilistic<float>::srand(0);
 
   nbTrainingSample = 0;
   nbMaxTrainingSamples = 100000;
@@ -56,37 +57,37 @@ void PredictionModule::init()
   predictor = new RLLib::SemiLinearIDBD<float>(x->dimension(), 1e-4 / x->dimension());
 
   // NOT USE NOW
-  /*
-   hashing = new RLLib::MurmurHashing(32);
-   problem = new RLLib::RLProblem<float>(2, 1, 1); // Dummy
-   projector = new RLLib::TileCoderHashing<float>(hashing, problem->dimension(), 10, 10, true);
-   toStateAction = new RLLib::StateActionTilings<float>(projector, problem->getDiscreteActions());
-   e = new RLLib::RTrace<float>(projector->dimension());
-   alpha = 0.15 / projector->vectorNorm();
-   gamma = 0.99;
-   lambda = 0.3;
-   epsilon = 0.01;
-   sarsa = new RLLib::Sarsa<float>(alpha, gamma, lambda, e);
-   acting = new RLLib::EpsilonGreedy<float>(sarsa, problem->getDiscreteActions(), epsilon);
+  random = new RLLib::Random<float>;
+  hashing = new RLLib::MurmurHashing<float>(random, 32);
+  problem = new RLLib::RLProblem<float>(random, 1, 1, 1); // Dummy
+  projector = new RLLib::TileCoderHashing<float>(hashing, problem->dimension(), 10, 10, true);
+  toStateAction = new RLLib::StateActionTilings<float>(projector, problem->getDiscreteActions());
+  e = new RLLib::RTrace<float>(projector->dimension());
+  alpha = 0.001f / projector->vectorNorm();
+  gamma = 0.10f;
+  lambda = 0.3f;
+  epsilon = 0.01f;
+  sarsa = new RLLib::Sarsa<float>(alpha, gamma, lambda, e);
+  acting = new RLLib::EpsilonGreedy<float>(random, problem->getDiscreteActions(), sarsa, epsilon);
 
-   control = new RLLib::SarsaControl<float>(acting, toStateAction, sarsa);
-   agent = new RLLib::LearnerAgent<float>(control);
-   sim = new RLLib::Simulator<float>(agent, problem, 5000, 300, 1);
-   */
+  control = new RLLib::SarsaControl<float>(acting, toStateAction, sarsa);
+  agent = new RLLib::LearnerAgent<float>(control);
+  sim = new RLLib::Simulator<float>(agent, problem, 1000, 1, 1);
+
 }
 
 void PredictionModule::execute()
 {
-  //sim->step();
+  //sim->step(); //<< only testing
   if (nbTrainingSample < nbMaxTrainingSamples)
   {
-    float x0 = RLLib::Probabilistic<float>::nextGaussian(0.25, 0.2);
+    float x0 = random->nextGaussian(0.25, 0.2);
     x->setEntry(1, x0); // @@>> input noise?
     x->setEntry(2, x0 * x0);
     float y0 = 0; // @@>> output noise?
     predictor->learn(x, y0);
 
-    float x1 = RLLib::Probabilistic<float>::nextGaussian(0.75, 0.2);
+    float x1 = random->nextGaussian(0.75, 0.2);
     x->setEntry(1, x1); // @@>> input noise?
     x->setEntry(2, x1 * x1);
     float y1 = 1; // @@>> output noise?
@@ -97,9 +98,9 @@ void PredictionModule::execute()
 
 void PredictionModule::update(PredictionRepresentation& thePredictionRepresentation)
 {
-  if (RLLib::Probabilistic<float>::nextReal() > 0.5)
+  if (random->nextReal() > 0.5)
   {
-    float x0 = RLLib::Probabilistic<float>::nextGaussian(0.25, 0.2);
+    float x0 = random->nextGaussian(0.25, 0.2);
     x->setEntry(1, x0); // @@>> input noise?
     x->setEntry(2, x0 * x0);
     thePredictionRepresentation.target = 0;
@@ -107,7 +108,7 @@ void PredictionModule::update(PredictionRepresentation& thePredictionRepresentat
   }
   else
   {
-    float x1 = RLLib::Probabilistic<float>::nextGaussian(0.75, 0.2);
+    float x1 = random->nextGaussian(0.75, 0.2);
     x->setEntry(1, x1); // @@>> input noise?
     x->setEntry(2, x1 * x1);
     thePredictionRepresentation.target = 1;

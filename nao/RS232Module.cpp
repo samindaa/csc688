@@ -64,13 +64,16 @@ void RS232Module::update(RS232Representation::Inputs& pfInputs)
             std::istream_iterator<std::string> end;
             std::vector<std::string> psInputs(begin, end);
             std::vector<float> fInputs;
-            for (size_t i = 0; i < psInputs.size(); i += 2)
+            if (!psInputs.empty())
             {
-              int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
-              int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
-              fInputs.push_back(FloatDetails(mantissa, exp));
+              for (size_t i = 0; i < psInputs.size(); i += 2)
+              {
+                int32_t mantissa = (int32_t) std::atoi(psInputs[i + 0].c_str());
+                int16_t exp = (int16_t) std::atoi(psInputs[i + 1].c_str());
+                fInputs.push_back(FloatDetails(mantissa, exp));
+              }
+              pfInputs.insert(std::make_pair(pfInputs.size(), fInputs));
             }
-            pfInputs.insert(std::make_pair(pfInputs.size(), fInputs));
           }
         }
         else
@@ -84,16 +87,21 @@ void RS232Module::update(RS232Representation::Inputs& pfInputs)
     }
     //printf("received %i bytes: %s\n", n, (char *) buf);
   }
-
   // debug
-  /*for (RS232Representation::Inputs::iterator iter = pfInputs.begin(); iter != pfInputs.end();
-   ++iter)
-   {
-   for (std::vector<float>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end();
-   ++iter2)
-   std::cout << *iter2 << " ";
-   }
-   std::cout << std::endl;*/
+  //myDebug(pfInputs);
+}
+
+void RS232Module::myDebug(RS232Representation::Inputs& pfInputs)
+{
+  for (RS232Representation::Inputs::iterator iter = pfInputs.begin(); iter != pfInputs.end();
+      ++iter)
+  {
+    for (std::vector<float>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end();
+        ++iter2)
+      std::cout << *iter2 << " ";
+  }
+  if (!pfInputs.empty())
+    std::cout << std::endl;
 }
 
 MAKE_MODULE(RS232Module)

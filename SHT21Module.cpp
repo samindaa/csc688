@@ -113,4 +113,4 @@ void SHT21Module::update(SHT21Representation& theSHT21Representation)
 }
 // This is a very slow component.
 // Use it only if necessary.
-MAKE_MODULE(SHT21Module)
+//MAKE_MODULE(SHT21Module)

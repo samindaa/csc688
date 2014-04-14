@@ -22,9 +22,8 @@ protected:
   QCustomPlot* plot;
   QVector<double> x;
 
-  int nbPlots;
   std::vector<QVector<double> > yValues;
-  std::vector<Qt::GlobalColor> globalColors;
+  std::vector<Qt::GlobalColor> nbPlots;
 
 public:
   Plot(QWidget *parent = 0);

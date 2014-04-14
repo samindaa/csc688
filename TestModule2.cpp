@@ -15,7 +15,7 @@ TestModule2::TestModule2() :
 void TestModule2::execute()
 {
 #if defined(ENERGIA)
-  // blink green led
+  // Toggle LED
   if (millis() - prevTime > 250)
   {
     prevTime = millis();
@@ -29,15 +29,9 @@ void TestModule2::execute()
 
   if (collectData)
   {
-    digitalWrite(RED_LED, ledState);
-    digitalWrite(GREEN_LED, ledState);
-    digitalWrite(BLUE_LED, ledState);
-  }
-  else if (theISL29023Representation->fAmbient < 10) // dark
-  {
-    digitalWrite(RED_LED, ledState);
-    digitalWrite(GREEN_LED, ledState);
-    digitalWrite(BLUE_LED, ledState);
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
   }
   else
   {
@@ -45,6 +39,25 @@ void TestModule2::execute()
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(BLUE_LED, ledState);
   }
+
+  /*if (collectData)
+   {
+   digitalWrite(RED_LED, ledState);
+   digitalWrite(GREEN_LED, ledState);
+   digitalWrite(BLUE_LED, ledState);
+   }
+   else if (theISL29023Representation->fAmbient < 10) // dark
+   {
+   digitalWrite(RED_LED, ledState);
+   digitalWrite(GREEN_LED, ledState);
+   digitalWrite(BLUE_LED, ledState);
+   }
+   else
+   {
+   digitalWrite(RED_LED, LOW);
+   digitalWrite(GREEN_LED, LOW);
+   digitalWrite(BLUE_LED, ledState);
+   }*/
 #endif
 
 }

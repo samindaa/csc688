@@ -24,6 +24,9 @@
 
 #include <cmath>
 #include <limits>
+#include <limits.h>
+#include <stdint.h>
+
 #include "Vector.h"
 
 namespace RLLib
@@ -54,36 +57,142 @@ class Boundedness
     }
 };
 
-// Important distributions
-template<class T>
-class Probabilistic
-{
-  public:
+//-----------------------------------------------------------------------------
+// Xorshift RNG based on code by George Marsaglia
+// http://en.wikipedia.org/wiki/Xorshift
 
-    inline static void srand(const long& seed)
+class Xorshift
+{
+  private:
+    uint32_t x;
+    uint32_t y;
+    uint32_t z;
+    uint32_t w;
+
+  public:
+    Xorshift()
     {
-      ::srand(seed);
+      reseed(uint32_t(0));
     }
 
-    inline static int rand()
+    Xorshift(uint32_t seed)
     {
-      return ::rand();
+      reseed(seed);
+    }
+
+    void reseed(uint32_t seed)
+    {
+      x = 0x498b3bc5 ^ seed;
+      y = 0;
+      z = 0;
+      w = 0;
+
+      for (int i = 0; i < 10; i++)
+        mix();
+    }
+
+    void reseed(uint64_t seed)
+    {
+      x = 0x498b3bc5 ^ (uint32_t) (seed >> 0);
+      y = 0x5a05089a ^ (uint32_t) (seed >> 32);
+      z = 0;
+      w = 0;
+
+      for (int i = 0; i < 10; i++)
+        mix();
+    }
+
+    //-----------------------------------------------------------------------------
+
+    void mix(void)
+    {
+      uint32_t t = x ^ (x << 11);
+      x = y;
+      y = z;
+      z = w;
+      w = w ^ (w >> 19) ^ t ^ (t >> 8);
+    }
+
+    uint32_t rand_u32(void)
+    {
+      mix();
+
+      return x;
+    }
+
+    uint64_t rand_u64(void)
+    {
+      mix();
+
+      uint64_t a = x;
+      uint64_t b = y;
+
+      return (a << 32) | b;
+    }
+
+    void rand_p(void * blob, int bytes)
+    {
+      uint32_t * blocks = reinterpret_cast<uint32_t*>(blob);
+
+      while (bytes >= 4)
+      {
+        blocks[0] = rand_u32();
+        blocks++;
+        bytes -= 4;
+      }
+
+      uint8_t * tail = reinterpret_cast<uint8_t*>(blocks);
+
+      for (int i = 0; i < bytes; i++)
+      {
+        tail[i] = (uint8_t) rand_u32();
+      }
+    }
+};
+
+// Important distributions
+template<class T>
+class Random
+{
+  private:
+    Xorshift xorshift;
+
+  public:
+    Random()
+    {
+    }
+
+    inline  void reseed(const uint32_t& seed)
+    {
+      //::srand(seed);
+      xorshift.reseed(seed);
+    }
+
+    inline  int rand()
+    {
+      //return ::rand();
+      return xorshift.rand_u32() % RAND_MAX;
+    }
+
+    inline uint32_t randu32(void)
+    {
+      return xorshift.rand_u32();
     }
 
     // [0 .. size)
-    inline static T nextValue(const int& size)
+    inline  int nextInt(const int& size)
     {
       return rand() % size;
     }
 
-    // [0..1]
-    inline static T nextReal()
+    // [0..1)
+    inline  T nextReal()
     {
       return T(rand()) / static_cast<T>(RAND_MAX);
     }
 
     // A gaussian random deviate
-    inline static T nextNormalGaussian()
+    inline  T nextNormalGaussian()
     {
       T r, v1, v2;
       do
@@ -96,13 +205,13 @@ class Probabilistic
       return v1 * fac;
     }
 
-    inline static T gaussianProbability(const T& x, const T& m, const T& s)
+    inline  T gaussianProbability(const T& x, const T& m, const T& s) const
     {
       return exp(-0.5f * pow((x - m) / s, 2)) / (s * sqrt(2.0f * M_PI));
     }
 
     // http://en.literateprograms.org/Box-Muller_transform_(C)
-    inline static T nextGaussian(const T& mean, const T& stddev)
+    inline  T nextGaussian(const T& mean, const T& stddev)
     {
       static T n2 = T(0);
       static int n2_cached = 0;
@@ -178,9 +287,9 @@ class Range
       return min() + (length() / 2.0f);
     }
 
-    T chooseRandom() const
+    T choose(Random<T>* random) const
     {
-      return Probabilistic<T>::nextReal() * length() + min();
+      return random->nextReal() * length() + min();
     }
 
     // Unit output [0,1]
@@ -194,101 +303,88 @@ template<class T>
 class Ranges
 {
   protected:
-    typename std::vector<Range<T>*> ranges;
+    typename std::vector<Range<T>*>* ranges;
   public:
     typedef typename std::vector<Range<T>*>::iterator iterator;
     typedef typename std::vector<Range<T>*>::const_iterator const_iterator;
 
-    Ranges()
+    Ranges() :
+        ranges(new std::vector<Range<T>*>())
     {
     }
 
     ~Ranges()
     {
-      ranges.clear();
+      ranges->clear();
+      delete ranges;
     }
 
-    Ranges(const Range<T>& that)
+    Ranges(const Range<T>& that) :
+        ranges(new std::vector<Range<T>*>())
     {
       for (typename Vectors<T>::iterator iter = that.begin(); iter != that.end(); ++iter)
-        ranges.push_back(*iter);
+        ranges->push_back(*iter);
     }
 
     Ranges<T>& operator=(const Ranges<T>& that)
     {
       if (this != that)
       {
-        ranges.clear();
+        ranges->clear();
         for (typename Vectors<T>::iterator iter = that.begin(); iter != that.end(); ++iter)
-          ranges.push_back(*iter);
+          ranges->push_back(*iter);
       }
       return *this;
     }
 
     void push_back(Range<T>* range)
     {
-      ranges.push_back(range);
+      ranges->push_back(range);
     }
 
     iterator begin()
     {
-      return ranges.begin();
+      return ranges->begin();
     }
 
     const_iterator begin() const
     {
-      return ranges.begin();
+      return ranges->begin();
     }
 
     iterator end()
     {
-      return ranges.end();
+      return ranges->end();
     }
 
     const_iterator end() const
     {
-      return ranges.end();
+      return ranges->end();
     }
 
     int dimension() const
     {
-      return ranges.size();
+      return ranges->size();
     }
 
     Range<T>& operator[](const int& index)
     {
-#if defined(ENERGIA)
-      return *ranges[index];
-#else
-      return *ranges.at(index);
-#endif
+      return *ranges->at(index);
     }
 
     const Range<T>& operator[](const int& index) const
     {
-#if defined(ENERGIA)
-      return *ranges[index];
-#else
-      return *ranges.at(index);
-#endif
+      return *ranges->at(index);
     }
 
     Range<T>* at(const int& index)
     {
-#if defined(ENERGIA)
-      return *ranges[index];
-#else
-      return ranges.at(index);
-#endif
+      return ranges->at(index);
     }
 
     const Range<T>* at(const int& index) const
     {
-#if defined(ENERGIA)
-      return *ranges[index];
-#else
-      return ranges.at(index);
-#endif
+      return ranges->at(index);
     }
 };
 

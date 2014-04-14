@@ -11,6 +11,8 @@
 #if defined(TARGET_NAO)
 #include "framework/Module.h"
 #include "representations/perception/FrameInfo.h"
+#include "representations/modeling/GroundContactState.h"
+#include "representations/motion/WalkingEngineOutput.h"
 #else
 #include "../Template.h"
 #endif
@@ -23,13 +25,16 @@
 MODULE(LaunchPadLogModule)
   REQUIRES(RS232Representation) //
 #if defined(TARGET_NAO)
-  REQUIRES(FrameInfo)
+  REQUIRES(FrameInfo) //
+  REQUIRES(GroundContactState) //
+  REQUIRES(WalkingEngineOutput) //
 #endif
 END_MODULE
 class LaunchPadLogModule: public LaunchPadLogModuleBase
 {
   private:
     std::ofstream ofs;
+
   public:
     LaunchPadLogModule();
     ~LaunchPadLogModule();

@@ -25,13 +25,14 @@ class PredictionModule: public PredictionModuleBase
     // Supervised Learning
     int nbTrainingSample;
     int nbMaxTrainingSamples;
+    RLLib::Random<float>* random;
     RLLib::Vector<float>* x;
     RLLib::SemiLinearIDBD<float>* predictor;
 
     // Reinforcement Learning
     float epsilon;
     RLLib::RLProblem<float>* problem;
-    RLLib::Hashing* hashing;
+    RLLib::Hashing<float>* hashing;
     RLLib::Projector<float>* projector;
     RLLib::StateToStateAction<float>* toStateAction;
     RLLib::Trace<float>* e;

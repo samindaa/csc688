@@ -52,6 +52,7 @@ class RS232Module: public RS232ModuleBase
 
   private:
     void update(RS232Representation::Inputs& pfInputs);
+    void myDebug(RS232Representation::Inputs& pfInputs);
 };
 
 #endif /* RS232MODULE_H_ */
