@@ -193,14 +193,15 @@ void Graph::computeGraph()
     {
       errorMsg += (" requiredRepresentationName=");
       errorMsg += (moduleRepresentationEntry->requiredRepresentationName);
-      errorMsg += (" is missing!");
+      errorMsg += (" is missing! for requiredModuleName=");
+      errorMsg += (moduleRepresentationEntry->requiredModuleName);
 #if !defined(ENERGIA)
       std::cout << "ERROR!" << errorMsg << std::endl;
 #endif
     }
     if (!(moduleNode && representationNode))
     {
-      errorMsg += (" moduleNode and representationNode are NULL!");
+      errorMsg += (" moduleNode and/or representationNode are NULL!");
 #if !defined(ENERGIA)
       std::cerr << "ERROR!" << errorMsg << std::endl;
       exit(1);
