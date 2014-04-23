@@ -28,17 +28,17 @@ The project consists of four parts. It consists of modules and representations t
 
 ## Software Architecture
 
-The software development framework uses a notion of `modules` and `representations` to perform computations. The modules implements functions, while representations exchange information from one module to another. The following figure shows an example of modules are representations currently available in the distribution. 
+The software development framework uses a notion of `modules` and `representations` to perform computations. The modules implement functions, while representations exchange information from one module to another. The following figure shows an example of modules and representations currently available in the distribution. 
 
 ![](http://web.cs.miami.edu/home/saminda/tmp/csc688_energia.png)
 
-The green boxes represent modules, while the yellow ellipses represent the representations. As an example, module `MPU9150Module` contains logic to read/write  from MPU-9150 Nine-Axis (Gyro + Accelerometer + Compass) MEMS MotionTracking™ device on the sensor hub booster pack. `MPU9150Representation` representation contains all the values that module MPU9150Module would like to share with other modules. In this graph TestModule4 requests values from MPU9150Representation to implement its logic. A module can provide multiple representations as shown in the module `TestModule2`. The yellow arrows shows the provided representations, the black arrows show the requested representations, and the red arrows show the used representations.  
+The green boxes represent modules, while the yellow ellipses represent the representations. As an example, the module `MPU9150Module` contains logic to read/write  from MPU-9150 Nine-Axis (Gyro + Accelerometer + Compass) MEMS MotionTracking™ device on the sensor hub booster pack. The representation `MPU9150Representation` contains all the values that module MPU9150Module would like to share with other modules. In this graph TestModule4 requests values from MPU9150Representation to implement its logic. A module can provide multiple representations as shown in the module `TestModule2`. The yellow arrows shows the provided representations, the black arrows show the requested representations, and the red arrows show the used representations.  
 
 There are two graphs in the figure; the "offline graph" will be executed offline, while the rest of the graph, "online graph", will be executed on the devices. We have shown only two graphs in this figure; in reality, one can keep up to N number of graphs. The uses of the software only requires to write the modules and representations, while the framework will compute the topologically sorted graph out of the nodes. This will be computed once online/offline, and the nodes in the queue will be executed one after the other. If there were to be cycles in the graph, the framework will detect them and indicate them to the users.  
 
-The module `PredictionModule` uses RLLib to learn on-line about a supervised learning problem. It provides the representation `PredictionRepresentation`. We have the `SendModule` to send values of the represenations to an offline module. This is useful during the debug phases of the project. The module `RS232Module` reads the data values that is send from SendModule. 
+The module `PredictionModule` uses RLLib to learn on-line about a supervised learning problem. It provides the representation `PredictionRepresentation`. We have written the module `SendModule` to send values of the representations to offline modules. This is useful during the debug phases of the project. The module `RS232Module` reads the data values that is send from SendModule. 
 
-To write modules and representations, one needs the following (this example shows the implementation of  TestModule1 and TestRepresentation1 in the figure):
+To write modules and representations, one needs the following (this example shows the implementation of the module  TestModule1 and the representation TestRepresentation1 in the figure):
 
 
 ```cpp
@@ -102,7 +102,7 @@ public:
 
 ```
 
-You need to include the header file `Template.h`  to access the framework functionality. 
+The user needs to include the header file `Template.h`  to access the framework functionality. 
 
 
 ## Compilation
