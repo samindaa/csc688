@@ -14,7 +14,7 @@
 
 MODULE(TestModule1)
   REQUIRES(LaunchPadRepresentation) //
-  PROVIDES(TestRepresentation1)
+  PROVIDES(TestRepresentation1) //
 END_MODULE
 
 class TestModule1: public TestModule1Base

@@ -11,9 +11,11 @@
 #include "Template.h"
 #include "MPU9150Representation.h"
 #include "Math.h"
+#include "TestRepresentation3.h"
 
 MODULE(TestModule4)
   REQUIRES(MPU9150Representation) //
+  USES(TestRepresentation3) //
 END_MODULE
 class TestModule4: public TestModule4Base
 {

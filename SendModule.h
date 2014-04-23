@@ -19,7 +19,7 @@
 MODULE(SendModule)
   REQUIRES(TestRepresentation2) //
   REQUIRES(MPU9150Representation) //
-  //REQUIRES(PredictionRepresentation)
+  REQUIRES(PredictionRepresentation)
 END_MODULE
 class SendModule: public SendModuleBase
 {

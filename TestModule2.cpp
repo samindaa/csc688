@@ -67,5 +67,9 @@ void TestModule2::update(TestRepresentation2& theTestRepresentation2)
   theTestRepresentation2.collectData = collectData;
 }
 
+void TestModule2::update(TestRepresentation3& theTestRepresentation3)
+{
+}
+
 MAKE_MODULE(TestModule2)
 
