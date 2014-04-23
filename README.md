@@ -130,10 +130,231 @@ In order to compile the project:
     5. Change directory to *build*.
     4. Execute the binary *viz*.
 
-## Platform
+## RLLib
 
-Following figure shows an example of modules and representations available as at (03/24/2014):
+Following figure shows an example of using RLLib functionality in a module.
 
+```cpp
+
+/*
+ * PredictionModule.h
+ *
+ *  Created on: Mar 20, 2014
+ *      Author: sam
+ */
+
+#ifndef PREDICTIONMODULE_H_
+#define PREDICTIONMODULE_H_
+
+#include "Template.h"
+//#include "ISL29023Representation.h"
+#include "PredictionRepresentation.h"
+#include "SupervisedAlgorithm.h"
+#include "ControlAlgorithm.h"
+#include "RL.h"
+#include "Projector.h"
+
+MODULE(PredictionModule)
+  PROVIDES(PredictionRepresentation) //
+END_MODULE
+class PredictionModule: public PredictionModuleBase
+{
+  private:
+    // Supervised Learning
+    int nbTrainingSample;
+    int nbMaxTrainingSamples;
+    RLLib::Random<float>* random;
+    RLLib::Vector<float>* x;
+    RLLib::SemiLinearIDBD<float>* predictor;
+
+    // Reinforcement Learning
+    float epsilon;
+    RLLib::RLProblem<float>* problem;
+    RLLib::Hashing<float>* hashing;
+    RLLib::Projector<float>* projector;
+    RLLib::StateToStateAction<float>* toStateAction;
+    RLLib::Trace<float>* e;
+    float alpha;
+    float gamma;
+    float lambda;
+    RLLib::Sarsa<float>* sarsa;
+    RLLib::Policy<float>* acting;
+    RLLib::OnPolicyControlLearner<float>* control;
+
+    RLLib::RLAgent<float>* agent;
+    RLLib::Simulator<float>* sim;
+
+  public:
+    PredictionModule();
+    ~PredictionModule();
+    void init();
+    void execute();
+    void update(PredictionRepresentation& thePredictionRepresentation);
+};
+
+#endif /* PREDICTIONMODULE_H_ */
+
+
+```
+
+```cpp
+
+/*
+ * PredictionModule.cpp
+ *
+ *  Created on: Mar 20, 2014
+ *      Author: sam
+ */
+
+#include "PredictionModule.h"
+
+PredictionModule::PredictionModule() :
+    nbTrainingSample(0), nbMaxTrainingSamples(0), random(0), x(0), predictor(0), epsilon(0), problem(
+        0), hashing(0), projector(0), toStateAction(0), e(0), alpha(0), gamma(0), lambda(0), sarsa(
+        0), acting(0), control(0), agent(0), sim(0)
+{
+
+}
+
+PredictionModule::~PredictionModule()
+{
+  if (random)
+    delete random;
+  if (x)
+    delete x;
+  if (predictor)
+    delete predictor;
+  if (problem)
+    delete problem;
+  if (hashing)
+    delete hashing;
+  if (projector)
+    delete projector;
+  if (toStateAction)
+    delete toStateAction;
+  if (e)
+    delete e;
+  if (sarsa)
+    delete sarsa;
+  if (acting)
+    delete acting;
+  if (control)
+    delete control;
+  if (agent)
+    delete agent;
+  if (sim)
+    delete sim;
+}
+
+void PredictionModule::init()
+{
+  //predictor->initialize();
+  //control->persist("foo.dat");
+
+  nbTrainingSample = 0;
+  nbMaxTrainingSamples = 100000;
+  x = new RLLib::PVector<float>(3);
+  x->setEntry(0, 1); // bias
+  predictor = new RLLib::SemiLinearIDBD<float>(x->dimension(), 1e-4 / x->dimension());
+
+  // NOT USE NOW
+  random = new RLLib::Random<float>;
+  hashing = new RLLib::MurmurHashing<float>(random, 32);
+  problem = new RLLib::RLProblem<float>(random, 1, 1, 1); // Dummy
+  projector = new RLLib::TileCoderHashing<float>(hashing, problem->dimension(), 10, 10, true);
+  toStateAction = new RLLib::StateActionTilings<float>(projector, problem->getDiscreteActions());
+  e = new RLLib::RTrace<float>(projector->dimension());
+  alpha = 0.001f / projector->vectorNorm();
+  gamma = 0.10f;
+  lambda = 0.3f;
+  epsilon = 0.01f;
+  sarsa = new RLLib::Sarsa<float>(alpha, gamma, lambda, e);
+  acting = new RLLib::EpsilonGreedy<float>(random, problem->getDiscreteActions(), sarsa, epsilon);
+
+  control = new RLLib::SarsaControl<float>(acting, toStateAction, sarsa);
+  agent = new RLLib::LearnerAgent<float>(control);
+  sim = new RLLib::Simulator<float>(agent, problem, 1000, 1, 1);
+
+}
+
+void PredictionModule::execute()
+{
+  //sim->step(); //<< only testing
+  if (nbTrainingSample < nbMaxTrainingSamples)
+  {
+    float x0 = random->nextGaussian(0.25, 0.2);
+    x->setEntry(1, x0); // @@>> input noise?
+    x->setEntry(2, x0 * x0);
+    float y0 = 0; // @@>> output noise?
+    predictor->learn(x, y0);
+
+    float x1 = random->nextGaussian(0.75, 0.2);
+    x->setEntry(1, x1); // @@>> input noise?
+    x->setEntry(2, x1 * x1);
+    float y1 = 1; // @@>> output noise?
+    predictor->learn(x, y1);
+    ++nbTrainingSample;
+  }
+}
+
+void PredictionModule::update(PredictionRepresentation& thePredictionRepresentation)
+{
+  if (random->nextReal() > 0.5)
+  {
+    float x0 = random->nextGaussian(0.25, 0.2);
+    x->setEntry(1, x0); // @@>> input noise?
+    x->setEntry(2, x0 * x0);
+    thePredictionRepresentation.target = 0;
+    thePredictionRepresentation.prediction = predictor->predict(x);
+  }
+  else
+  {
+    float x1 = random->nextGaussian(0.75, 0.2);
+    x->setEntry(1, x1); // @@>> input noise?
+    x->setEntry(2, x1 * x1);
+    thePredictionRepresentation.target = 1;
+    thePredictionRepresentation.prediction = predictor->predict(x);
+  }
+}
+
+MAKE_MODULE(PredictionModule)
+
+
+
+
+```
+
+
+```cpp
+
+/*
+ * PredictionRepresentation.h
+ *
+ *  Created on: Apr 2, 2014
+ *      Author: sam
+ */
+
+#ifndef PREDICTIONREPRESENTATION_H_
+#define PREDICTIONREPRESENTATION_H_
+
+#include "Template.h"
+
+REPRESENTATION(PredictionRepresentation)
+class PredictionRepresentation: public PredictionRepresentationBase
+{
+  public:
+    float target;
+    float prediction;
+    PredictionRepresentation() :
+        target(0), prediction(0)
+    {
+    }
+};
+
+#endif /* PREDICTIONREPRESENTATION_H_ */
+
+
+```
 
 
 ## Contact
