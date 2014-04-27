@@ -11,6 +11,10 @@
 #include "Wire.h"
 #endif
 
+// This is a very slow component.
+// Use it only if necessary.
+MAKE_MODULE(SHT21Module)
+
 void SHT21Module::init()
 {
 #if defined(ENERGIA)
@@ -111,6 +115,3 @@ void SHT21Module::update(SHT21Representation& theSHT21Representation)
 
 #endif
 }
-// This is a very slow component.
-// Use it only if necessary.
-MAKE_MODULE(SHT21Module)

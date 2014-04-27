@@ -11,6 +11,8 @@
 #include "Wire.h"
 #endif
 
+MAKE_MODULE(BMP180Module)
+
 void BMP180Module::init()
 {
   calibration();
@@ -188,5 +190,3 @@ void BMP180Module::calculation(BMP180Representation& theBMP180Representation)
 
 #endif
 }
-
-MAKE_MODULE(BMP180Module)

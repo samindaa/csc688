@@ -25,6 +25,9 @@ class PredictionModule: public PredictionModuleBase
     // Supervised Learning
     int nbTrainingSample;
     int nbMaxTrainingSamples;
+    float gridResolution;
+    int nbTilings;
+    //
     RLLib::Random<float>* random;
     RLLib::Vector<float>* x;
     RLLib::SemiLinearIDBD<float>* predictor;

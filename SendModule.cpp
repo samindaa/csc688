@@ -28,8 +28,8 @@ void SendModule::execute()
     floatToBytes(theMPU9150Representation->fPitch);
     floatToBytes(theMPU9150Representation->fYaw);
 
-    //floatToBytes(thePredictionRepresentation->target);
-    //floatToBytes(thePredictionRepresentation->prediction);
+    floatToBytes(thePredictionRepresentation->target);
+    floatToBytes(thePredictionRepresentation->prediction);
   }
   Serial.println("}"); //<< EOF
 #endif
