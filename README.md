@@ -114,7 +114,7 @@ Framework.h
 Framework.cpp
 ```
 
-A practitioner can only need to use these three files to get the complete functionality of the framework. This framework has been tested on Taxas Instruments' MSP430, Stellaris, and the Tiva C LaunchPad boards. Our framework is light, flexible, and it consumes *minimum* memory and computational resources as possible. 
+A practitioner can only need to use these three files to get the complete functionality of the framework. The framework has been tested on Taxas Instruments' MSP430, Stellaris, and the Tiva C LaunchPad boards. Our framework is light, flexible, and only consumes *minimum* memory and computational resources as possible. 
 
 ## Compilation
 
