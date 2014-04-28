@@ -104,6 +104,17 @@ public:
 
 The user needs to include the header file `Template.h`  to access the framework functionality. 
 
+### Framework
+
+The `csc688` framework consists of three files:
+
+```cpp
+Template.h
+Framework.h
+Framework.cpp
+```
+
+A practitioner can only need to use these three files to get the complete functionality of the framework. This framework has been tested on Taxas Instruments' MSP430, Stellaris, and the Tiva C LaunchPad boards. Our framework is light, flexible, and it consumes *minimum* memory and computational resources as possible. 
 
 ## Compilation
 
@@ -163,6 +174,9 @@ class PredictionModule: public PredictionModuleBase
     // Supervised Learning
     int nbTrainingSample;
     int nbMaxTrainingSamples;
+    float gridResolution;
+    int nbTilings;
+    //
     RLLib::Random<float>* random;
     RLLib::Vector<float>* x;
     RLLib::SemiLinearIDBD<float>* predictor;
@@ -208,10 +222,12 @@ class PredictionModule: public PredictionModuleBase
 
 #include "PredictionModule.h"
 
+MAKE_MODULE(PredictionModule)
+
 PredictionModule::PredictionModule() :
-    nbTrainingSample(0), nbMaxTrainingSamples(0), random(0), x(0), predictor(0), epsilon(0), problem(
-        0), hashing(0), projector(0), toStateAction(0), e(0), alpha(0), gamma(0), lambda(0), sarsa(
-        0), acting(0), control(0), agent(0), sim(0)
+    nbTrainingSample(0), nbMaxTrainingSamples(0), gridResolution(0), nbTilings(0), random(0), x(0), predictor(
+        0), epsilon(0), problem(0), hashing(0), projector(0), toStateAction(0), e(0), alpha(0), gamma(
+        0), lambda(0), sarsa(0), acting(0), control(0), agent(0), sim(0)
 {
 
 }
@@ -248,29 +264,32 @@ PredictionModule::~PredictionModule()
 
 void PredictionModule::init()
 {
-  //predictor->initialize();
-  //control->persist("foo.dat");
-
+  //
   nbTrainingSample = 0;
-  nbMaxTrainingSamples = 100000;
-  x = new RLLib::PVector<float>(3);
-  x->setEntry(0, 1); // bias
-  predictor = new RLLib::SemiLinearIDBD<float>(x->dimension(), 1e-4 / x->dimension());
-
-  // NOT USE NOW
+  nbMaxTrainingSamples = 1000;
+  gridResolution = 10;
+  nbTilings = 4;
+  //
   random = new RLLib::Random<float>;
   hashing = new RLLib::MurmurHashing<float>(random, 32);
   problem = new RLLib::RLProblem<float>(random, 1, 1, 1); // Dummy
-  projector = new RLLib::TileCoderHashing<float>(hashing, problem->dimension(), 10, 10, true);
+  projector = new RLLib::TileCoderHashing<float>(hashing, problem->dimension(), gridResolution, 4,
+      true);
+  //
+  x = new RLLib::PVector<float>(problem->dimension());
+  predictor = new RLLib::SemiLinearIDBD<float>(projector->dimension(), 0.01f);
+  //
   toStateAction = new RLLib::StateActionTilings<float>(projector, problem->getDiscreteActions());
   e = new RLLib::RTrace<float>(projector->dimension());
+  //
   alpha = 0.001f / projector->vectorNorm();
   gamma = 0.10f;
   lambda = 0.3f;
   epsilon = 0.01f;
+  //
   sarsa = new RLLib::Sarsa<float>(alpha, gamma, lambda, e);
   acting = new RLLib::EpsilonGreedy<float>(random, problem->getDiscreteActions(), sarsa, epsilon);
-
+  //
   control = new RLLib::SarsaControl<float>(acting, toStateAction, sarsa);
   agent = new RLLib::LearnerAgent<float>(control);
   sim = new RLLib::Simulator<float>(agent, problem, 1000, 1, 1);
@@ -279,45 +298,37 @@ void PredictionModule::init()
 
 void PredictionModule::execute()
 {
-  //sim->step(); //<< only testing
   if (nbTrainingSample < nbMaxTrainingSamples)
   {
-    float x0 = random->nextGaussian(0.25, 0.2);
-    x->setEntry(1, x0); // @@>> input noise?
-    x->setEntry(2, x0 * x0);
-    float y0 = 0; // @@>> output noise?
-    predictor->learn(x, y0);
+    float rnd = random->nextReal() - 1.0f;
+    x->setEntry(0, (rnd + 1.0f) / 2.0f);
+    predictor->learn(projector->project(x), 0.0f);
 
-    float x1 = random->nextGaussian(0.75, 0.2);
-    x->setEntry(1, x1); // @@>> input noise?
-    x->setEntry(2, x1 * x1);
-    float y1 = 1; // @@>> output noise?
-    predictor->learn(x, y1);
+    rnd = random->nextReal();
+    x->setEntry(0, (rnd + 1.0f) / 2.0f);
+    predictor->learn(projector->project(x), 1.0f);
+
     ++nbTrainingSample;
   }
 }
 
 void PredictionModule::update(PredictionRepresentation& thePredictionRepresentation)
 {
-  if (random->nextReal() > 0.5)
+  if (random->nextReal() > 0.5f)
   {
-    float x0 = random->nextGaussian(0.25, 0.2);
-    x->setEntry(1, x0); // @@>> input noise?
-    x->setEntry(2, x0 * x0);
-    thePredictionRepresentation.target = 0;
-    thePredictionRepresentation.prediction = predictor->predict(x);
+    float rnd = random->nextReal() - 1.0f;
+    x->setEntry(0, (rnd + 1.0f) / 2.0f);
+    thePredictionRepresentation.target = 0.0f;
+    thePredictionRepresentation.prediction = predictor->predict(projector->project(x));
   }
   else
   {
-    float x1 = random->nextGaussian(0.75, 0.2);
-    x->setEntry(1, x1); // @@>> input noise?
-    x->setEntry(2, x1 * x1);
-    thePredictionRepresentation.target = 1;
-    thePredictionRepresentation.prediction = predictor->predict(x);
+    float rnd = random->nextReal();
+    x->setEntry(0, (rnd + 1.0f) / 2.0f);
+    thePredictionRepresentation.target = 1.0f;
+    thePredictionRepresentation.prediction = predictor->predict(projector->project(x));
   }
 }
-
-MAKE_MODULE(PredictionModule)
 
 
 
