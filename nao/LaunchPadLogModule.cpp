@@ -18,7 +18,7 @@ LaunchPadLogModule::~LaunchPadLogModule()
 
 void LaunchPadLogModule::init()
 {
-  ofs.open("NAO_dataset.txt", std::ios::out | std::ios::app);
+  ofs.open("NAO_samples.txt", std::ios::out | std::ios::app);
 }
 
 void LaunchPadLogModule::execute()
@@ -28,7 +28,7 @@ void LaunchPadLogModule::execute()
     if (ofs.is_open())
     {
 #if defined(TARGET_NAO)
-      if (theGroundContactState->contact && theWalkingEngineOutput->testingNextParameterSet > 0)
+      if (theGroundContactState->contact && (theWalkingEngineOutput->testingNextParameterSet > 0))
 #endif
       {
 #if defined(TARGET_NAO)

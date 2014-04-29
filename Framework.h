@@ -278,8 +278,9 @@ class Graph
 template <class T>
 class ModuleLoader
 {
-  public:
+  private:
     T theInstance;
+  public:
     ModuleLoader() { Graph::getInstance().addModule(&theInstance); }
     ~ModuleLoader() { }
 };
@@ -287,53 +288,76 @@ class ModuleLoader
 template<const char* (*getModuleName)(), void (*updateRepresentation)(Node*, Node*), class T>
 class RepresentationProvider
 {
-  public:
+  private :
     T theInstance;
+  public:
     RepresentationProvider() { Graph::getInstance().providedRepresentation(getModuleName(), &theInstance, updateRepresentation); }
-    ~RepresentationProvider() { }
+    virtual ~RepresentationProvider() { }
 };
 
 template<const char* (*getModuleName)(), const char* (*getRepresentationName)(), class T>
-class RepresentationRequierer
+class RepresentationPointer
+{
+  protected:
+    T* theInstance;
+
+  public:
+    RepresentationPointer() : theInstance(0) {  }
+    virtual ~RepresentationPointer() { }
+
+  protected:
+    inline T* getRepresentation()
+    {
+      if (!theInstance)
+        theInstance = (T*) Graph::getInstance().getRepresentation(getRepresentationName());
+      return theInstance;
+    }
+
+    inline T* getRepresentation() const
+    {
+      if (!theInstance)
+        return theInstance;
+      return (T*) Graph::getInstance().getRepresentation(getRepresentationName()); //<< SLOW for CONST ACCESS
+    }
+
+  public:
+    virtual bool isNull()                   { return (this->getRepresentation() == 0); }
+    virtual bool operator==(const T* other) { return this->getRepresentation() == other; }
+    virtual bool operator!=(const T* other) { return !(this->getRepresentation() == other); }
+
+};
+
+template<const char* (*getModuleName)(), const char* (*getRepresentationName)(), class T>
+class RepresentationRequierer : public RepresentationPointer<getModuleName, getRepresentationName, T>
 {
   public:
     RepresentationRequierer() { Graph::getInstance().requiredRepresentation(getModuleName(), getRepresentationName()); }
+    virtual ~RepresentationRequierer() { }
 
-  protected:
-    T* getRepresentation() const
-    {
-      static T* theInstance = 0;
-      if (theInstance == 0)
-        theInstance = (T*) Graph::getInstance().getRepresentation(getRepresentationName());
-      return theInstance;
-    };
   public:
-    const T* operator->() const { return getRepresentation(); }
-    const T& operator*()  const { return *(getRepresentation()); }
-    operator const T*()   const { return getRepresentation(); }
-    bool isNull()         const { return (getRepresentation() == 0); }
+    const T* operator->()        { return this->getRepresentation(); }
+    const T* operator->() const  { return this->getRepresentation(); }
+    const T& operator *()        { return *(this->getRepresentation()); }
+    const T& operator *() const  { return *(this->getRepresentation()); }
+    operator const   T*()        { return this->getRepresentation(); }
+    operator const   T*() const  { return this->getRepresentation(); }
 
 };
 
 template<const char* (*getModuleName)(), const char* (*getRepresentationName)(), class T>
-class RepresentationUser
+class RepresentationUser : public RepresentationPointer<getModuleName, getRepresentationName, T>
 {
   public:
     RepresentationUser() { Graph::getInstance().usedRepresentation(getModuleName(), getRepresentationName()); }
+    virtual ~RepresentationUser() { }
 
-  protected:
-    T* getRepresentation() const
-    {
-      static T* theInstance = 0;
-      if (theInstance == 0)
-        theInstance = (T*) Graph::getInstance().getRepresentation(getRepresentationName());
-      return theInstance;
-    };
   public:
-    const T* operator->() const { return getRepresentation(); }
-    const T& operator*()  const { return *(getRepresentation()); }
-    operator const T*()   const { return getRepresentation(); }
-    bool isNull()         const { return (getRepresentation() == 0); }
+    const T* operator->()        { return this->getRepresentation(); }
+    const T* operator->() const  { return this->getRepresentation(); }
+    const T& operator *()        { return *(this->getRepresentation()); }
+    const T& operator *() const  { return *(this->getRepresentation()); }
+    operator const   T*()        { return this->getRepresentation(); }
+    operator const   T*() const  { return this->getRepresentation(); }
 
 };
 

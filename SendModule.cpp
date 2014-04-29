@@ -10,11 +10,10 @@
 void SendModule::execute()
 {
 #if defined(ENERGIA)
-  Serial.print("{"); //<< SOF
   if (theTestRepresentation2->collectData)
   {
+    Serial.print("{"); //<< SOF
     // Write the
-
     floatToBytes(theMPU9150Representation->fAccelX);
     floatToBytes(theMPU9150Representation->fAccelY);
     floatToBytes(theMPU9150Representation->fAccelZ);
@@ -30,8 +29,8 @@ void SendModule::execute()
 
     floatToBytes(thePredictionRepresentation->target);
     floatToBytes(thePredictionRepresentation->prediction);
+    Serial.println("}");//<< EOF
   }
-  Serial.println("}"); //<< EOF
 #endif
 }
 

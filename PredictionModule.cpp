@@ -7,6 +7,8 @@
 
 #include "PredictionModule.h"
 
+MAKE_MODULE(PredictionModule)
+
 PredictionModule::PredictionModule() :
     nbTrainingSample(0), nbMaxTrainingSamples(0), gridResolution(0), nbTilings(0), random(0), x(0), predictor(
         0), epsilon(0), problem(0), hashing(0), projector(0), toStateAction(0), e(0), alpha(0), gamma(
@@ -112,6 +114,3 @@ void PredictionModule::update(PredictionRepresentation& thePredictionRepresentat
     thePredictionRepresentation.prediction = predictor->predict(projector->project(x));
   }
 }
-
-MAKE_MODULE(PredictionModule)
-

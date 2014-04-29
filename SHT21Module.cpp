@@ -13,7 +13,7 @@
 
 // This is a very slow component.
 // Use it only if necessary.
-MAKE_MODULE(SHT21Module)
+//MAKE_MODULE(SHT21Module)
 
 void SHT21Module::init()
 {

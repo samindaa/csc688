@@ -11,7 +11,7 @@
 #include "Wire.h"
 #endif
 
-MAKE_MODULE(BMP180Module)
+//MAKE_MODULE(BMP180Module)
 
 void BMP180Module::init()
 {

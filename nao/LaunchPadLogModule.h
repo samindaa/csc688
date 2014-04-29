@@ -34,12 +34,18 @@ class LaunchPadLogModule: public LaunchPadLogModuleBase
 {
   private:
     std::ofstream ofs;
+    //bool collectSamples;
+    //uint32_t vTime;
 
   public:
     LaunchPadLogModule();
     ~LaunchPadLogModule();
     void init();
     void execute();
+
+#if defined(TARGET_NAO)
+    //void update(LedRequest* theLedRequest);
+#endif
 };
 
 #endif /* LAUNCHPADLOGMODULE_H_ */
