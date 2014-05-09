@@ -1,0 +1,163 @@
+\documentclass{llncs}
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amsfonts}
+\usepackage{moreverb}
+%\usepackage[bookmarksnumbered=true,bookmarksopen=true,colorlinks,citecolor=red,pagebackref,hypertexnames=true]{hyperref}
+\usepackage[bookmarksnumbered=true,colorlinks,citecolor=blue,urlcolor=blue]{hyperref}
+
+% so we don't need to specify figures subdirectory in figure code
+\graphicspath{{./figures/}}
+\usepackage{subfig}
+
+%needed to change table colors
+\usepackage[table]{xcolor}
+
+%\usepackage{wrapfig}
+\usepackage{bm}
+\usepackage{paralist}
+
+%
+% Macro for comments
+%
+\def\mpar#1{\marginpar{\raggedright\scriptsize\sf #1}}
+\renewcommand\verbatimtabsize{2\relax}
+
+\newcommand{\anonymize}[2]{#1}
+
+
+\begin{document}
+\begin{sloppy}
+\title{Tiva C TODO}
+\author{Saminda Abeyruwan and Faisal Sikder}
+\institute{University of Miami, Department of Computer Science,\\
+1365 Memorial Drive, Coral Gables, FL, 33146, USA\\
+E-Mail: {\ttfamily \{saminda|f.sikder\}@cs.miami.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+CSC688 Energia. A software development platform for MSP-EXP430G2 LaunchPad, Tiva C Series
+EK-TM4C123GXL LaunchPad, and Tiva C Series TM4C129 Connected LaunchPad.
+\end{abstract}
+
+
+\section{Introduction}
+
+Texas Instruments (TIs) microcontrollers and add-on boards such as MSP430{\small \texttrademark}
+LaunchPad\footnote{\url{http://www.ti.com/tool/msp-exp430g2}},
+Tiva{\small \texttrademark} C Series TM4C123G
+LaunchPad\footnote{\url{http://www.ti.com/tool/ek-tm4c123gxl}} (a low-cost evaluation platform for
+ARM
+Cortex-M4F-based microcontrollers), Tiva C Series TM4C129 Connected
+LaunchPad\footnote{\url{
+http://embeddedcomputing.weebly.com/connected-launchpad-tiva-c-series-tm4c129.html}} (a new
+development platform from Texas Instruments
+based on the powerful TM4C129), and Sensor
+Hub BoosterPack\footnote{\url{http://www.ti.com/tool/boostxl-senshub}} (an add-on board designed to
+fit Tiva C Series TM4C123G LaunchPad
+along with all of TI’s MCU LaunchPads) provide ultimate solutions
+for a wide rage of low power and portable applications.
+
+Therefore, a modular and flexible software
+framework allow practitioners to use the functionalities provides by these systems effectively
+and efficiently. This paper describes a software contribution that allows the development of
+applications using open source principles and machine learning within
+Energia\footnote{\url{http://energia.nu/}} open-source electronics prototyping platform.
+
+The framework provides functionalities to build  rational agents that perceive its
+environment though sensors and act upon it though actuators \cite{russel2009}. The execution path
+between sensors to actuators may contain complex behaviors and modeling decisions that needs to be
+handled carefully. Hence, the framework takes these consideration into account and provides a
+topologically sorted graph based based on the decision points provided by practitioners. Our
+framework consists for four parts. It consists or modules and representations that execute on
+\begin{inparaenum}[(1)]\item microcontrollers (incremental); \item offline (batch mode); \item NAO
+robots\footnote{\url{http://www.aldebaran.com/en}}; and real-time visualizations\end{inparaenum}. 
+The framework also integrates RLLib, a C\texttt{++} template library that predict, control, learn
+behaviors, and represent learnable knowledge using on/off policy reinforcement learning, and
+supervised learning. Our framework, ``CSC688 Energia'', is publicly available from GitHub repository
+\url{https://github.com/samindaa/csc688}.
+
+We have tested our framework on multiple microcontrollers and on a sensor hub as stated above. We
+have written and distributed software solutions to access devices on the sensor hub such as
+\begin{inparaenum}[(1)] \item InvenSense MPU-9150: 9-axis MEMS motion tracking (3-axis gyro
+3-axis accelerometer, and 3-axis compass); \item Bosch Sensortec BMP180 pressure sensor; \item
+Sensirion SHT21 humidity and ambient temperature sensor; \item Intersil ISL29023 ambient and
+infrared light sensor; and \item TIs TMP006 non-contact infrared temperature sensor.
+\end{inparaenum}
+
+On practical point-of-view, we have tested our framework on the problem of motion detection using
+InvenSense MPU-9150: 9-axis MEMS motion tracking. We have conducted our experiments on a human
+and on a NAO humanoid robot to detect motions of standing, walking, and falling. We have used
+threshold based and machine learning methods to detect these motions and provide justification
+for the success of each method.   
+
+
+\section{Software Architecture}
+
+The software development framework uses a notion of ``modules'' and ``representations'' to perform
+computations. The modules implement functions, while the representations exchange information from
+one module to another. Figure \ref{fig:frameowrk} shows an example of modules and representations
+currently available in CSC688 Energia.
+
+\begin{figure}[ht]
+ \includegraphics[width=1.0\textwidth] {framework}
+ \caption{An example of modules and representations available in CSC688 Energia.}
+ \label{fig:frameowrk}
+\end{figure}
+
+The green boxes represent modules, while the yellow ellipses represent the representations. As an
+example, the module {\sf MPU9150Module} contains logic to read/write from MPU-9150 Nine-Axis
+(Gyro+Accelerometer+Compass) MEMS MotionTracking
+device\footnote{\url{http://www.invensense.com/mems/gyro/mpu9150.html}} on the sensor hub booster
+pack. The representation {\sf MPU9150Representation} contains all the values that the module
+{\sf MPU9150Module} would like to share with other modules. In this graph, {\sf TestModule4}
+requests
+values from {\sf MPU9150Representation} to implement its logic. A module can provide multiple
+representations as shown in the module {\sf TestModule2}. The blue arrows shows the provided
+representations, the black arrows show the requested representations, and the red arrows show the
+used representations.
+
+There are two graphs in the figure; \begin{inparaenum}[(1)] \item the ``offline graph'' will be
+executed offline, \item while the rest
+of the graph, ``online graph'', will be executed on the devices\end{inparaenum}. We have shown only
+two graphs in
+this figure; in reality, one can keep up to $N$ number of graphs. The end uses of the software only
+requires to write modules and representations, while the framework will compute the
+topologically sorted graph out of the nodes. This will be computed once online/offline, and the
+nodes in the queue will be executed one after the other. If there were to be cycles in the graph,
+the framework will detect them and indicate them to the users.
+
+The module {\sf PredictionModule} uses {\sf
+RLLib}\footnote{\url{https://github.com/samindaa/RLLib}} library to learn, predict, and control
+online on supervised and reinforcement learning problems. It provides
+the representation {\sf PredictionRepresentation}. There exists a module {\sf SendModule} to send
+values of the representations to offline modules. This is useful during the development phases of
+a project. The module {\sf RS232Module} reads the data values that is send from {\sf SendModule}.
+Please refere  to appendix for more information on implementations and
+examples of the frameowrk.
+
+\section{Approach}
+TODO:
+
+\section{Experiments \& Results}
+TODO:
+
+\section{Related Work}
+TODO:
+
+\section{Conclusion}
+TODO:
+
+\bibliographystyle{splncs03}
+\bibliography{references}
+
+\section*{Appendix: Implementation}
+\label{appendix:Implementation}
+To write modules and representations, one needs the following (this example shows the implementation
+of the module TestModule1 and the representation TestRepresentation1 in the figure):
+
+\end{sloppy}
+\end{document}
