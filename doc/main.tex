@@ -30,7 +30,8 @@
 
 \begin{document}
 \begin{sloppy}
-\title{CSC688 Energia}
+\title{An Activity Monitoring System for Able-Bodied Humans and NAO Humanoid Robots using CSC688
+Energia}
 \author{Saminda Abeyruwan and Faisal Sikder}
 \institute{University of Miami, Department of Computer Science,\\
 1365 Memorial Drive, Coral Gables, FL, 33146, USA\\
@@ -44,9 +45,9 @@ CSC688 Energia is a software development platform for MSP-EXP430G2 LaunchPad, Ti
 EK-TM4C123GXL LaunchPad, and Tiva C Series TM4C129 Connected LaunchPad. Our framework is
 lightweight, flexible, and consumes minimum memory and computational resources to build
 applications and rational agents on microcontrollers that sense and actuate using add-on boards. We
-have used the framework to detect motions such as standing, walking, and falling on a human
-and on a NAO humanoid robot using thresholding and machine learning methods. We empirically
-evaluate the outcomes and show the success of methods on different motion scenarios.  
+have used the framework to monitor activities such as standing, walking, and falling on able-bodied
+humans and on NAO humanoid robots using thresholding and machine learning methods. We empirically
+evaluate the outcomes and show the success of the methods on different activity scenarios.  
 \end{abstract}
 
 
@@ -77,7 +78,7 @@ environment though sensors and act upon it though actuators \cite{russel2009}. T
 between sensors to actuators may contain complex behaviors and modeling decisions that needs to be
 handled carefully. Hence, the framework takes these consideration into account and provides a
 topologically sorted graph based on the decision points provided by practitioners. Our
-framework consists for four parts. It consists or modules and representations that execute on
+framework consists for four parts. It consists of modules and representations that execute on
 \begin{inparaenum}[(1)]\item microcontrollers (incremental); \item offline (batch mode); \item NAO
 robots\footnote{\url{http://www.aldebaran.com/en}}; and \item real-time
 visualizations\end{inparaenum}. Our framework is lightweight, flexible, and consumes minimum memory
@@ -94,11 +95,12 @@ have written and distributed software solutions to access devices on the sensor 
 Sensirion SHT21 humidity and ambient temperature sensor; \item Intersil ISL29023 ambient and
 infrared light sensor; and \item TIs TMP006 non-contact infrared temperature sensor\end{inparaenum}.
 
-On practical point-of-view, we have tested our framework on the problem of motion detection using
-InvenSense MPU-9150: 9-axis MEMS motion tracking. We have conducted our experiments on a human
-and on a NAO humanoid robot to detect motions of standing, walking, and falling. We have used
-threshold based and machine learning methods to detect these motions and provide justification
-for the success of each method.   
+On the practical point-of-view, we have used our framework to experiment on the problem of activity
+detection using InvenSense MPU-9150: 9-axis MEMS motion tracking sensor. We have conducted our
+experiments on able-bodied humans and on NAO humanoid robots to detect motions such as standing,
+walking, and abruptly falling back and front. We have used threshold based methods and machine
+learning methods to detect these events and provide justifications, validations, and conclusions of
+each method.  
 
 
 \section{Software Architecture}
@@ -109,6 +111,7 @@ one module to another. Figure \ref{fig:framework} shows an example of modules an
 currently available in CSC688 Energia.
 
 \begin{figure}[ht]
+\centering
  \includegraphics[width=1.0\textwidth] {framework}
  \caption{An example of modules and representations available in CSC688 Energia.}
  \label{fig:framework}
@@ -145,11 +148,182 @@ a project. The module {\sf RS232Module} reads the data values that is send from 
 Please refere  to appendix for more information on implementations and
 examples of the framework.
 
-\section{Approach}
-TODO:
-
 \section{Experiments \& Results}
-TODO:
+
+We have conducted experiments on detecting motions (activities) on able-bodied humans and on NAO
+humanoid robots. In order to detect motions, we have used InvenSense MPU-9150: 9-axis MEMS
+motion tracking sensor on the sensor hub. The module {\sf MPU9150Module} connects to this device
+and provides the representation {\sf MPU9150Representation}. The representation contains
+3-axis accelerometer readings, 3-axis gyroscope readings, 3-axis magnetometer readings, quaternion
+rotation axis of the device, and Euler angles roll, pitch, and yaw. Depending on the experiment,
+the practitioner can change the sampling rate of the sensor. The maximum sampling rate of the
+sensor is 1000$Hz$. This section shows our results, validations, and conclusions.
+
+\subsection{Able-Bodied Human}
+
+We have collected data for different human activities. We have put the sensors on the chest of the
+human body and collected data from those sensors in fixed interval. For this experiment, we have
+sampled data in 50$Hz$ (or 20$ms$). We have data from several different human configurations:
+\begin{inparaenum}[(1)] \item standing; \item seating; \item walking; \item standing to seating;
+and \item standing to falling\end{inparaenum}. We have collected data based on the activities and
+each data point has twelve fields, where nine fields are from nine reading from sensors and three
+fields (yaw, pitch and roll) are derived from all those sensors reading.
+
+\subsection{Classification using Logistic Regression}
+
+In the first part of the data analysis we have put all our collected data together and labeled it
+with specific number to denote the position. We have used multivariate logistic regression model to
+classify our data. We have used 80\% of the data for training, while the rest has been used
+in validation.
+
+\begin{table}[!h]
+	\caption{Standing to seating detection.}	
+	\label{tab:StandingToSeatingDetection}
+	\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Seating & Standing \\ \hline
+			Actual& Seating & 94 & 6\\ \hline
+			Actual& Standing & 19& 81\\ \hline
+		\end{tabular}
+\end{table}
+
+Table \ref{tab:StandingToSeatingDetection} shows the predictions of standing to seating position
+movement for 200 data points. we can observe that we are able
+to predict this movement with quite good accuracy (approximately 87.5\%). Table
+ \ref{tab:StandingToWalkingDetection} shows the results for  standing to walking movement. In this
+movement, our prediction accuracy is about 86\%. In the actual fall prediction logistic
+regression can predict fall with 87.5\% accuracy (Shown in table
+ \ref{tab:StandingToFallingDetection}).
+\vspace{-5mm}
+\begin{table}
+\caption{Standing to walking detection.}
+	\label{tab:StandingToWalkingDetection}
+\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Walking & Standing \\ \hline
+			Actual& Walking & 89 & 11\\ \hline
+			Actual& Standing & 17& 83\\ \hline
+		\end{tabular}
+\end{table}
+\vspace{-10mm}
+\begin{table}[!h]
+\caption{Standing to falling detection.}
+\label{tab:StandingToFallingDetection}
+\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Fall & Standing \\ \hline
+			Actual& Fall & 92 & 08\\ \hline
+			Actual& Standing & 17& 83\\ \hline
+		\end{tabular}
+\end{table}
+\vspace{-5mm}
+\subsection{Classification and Validation Using Support Vector Machine}
+
+In the second part of the data analysis, we have used support vector machine (SVM) model
+to classify our data. To train the model, we used the same procedure as before, 80\% of
+our data were used to do the classification and rest twenty percent data were used to validate our
+classification result.
+
+Table \ref{tab:StandingToSeatingDetectionsvm} shows the prediction of standing to seating position
+movement for 200 data points. From that table we can observe that we are able to predict this
+movement with quite good accuracy (approximately 90\%). Table
+\ref{tab:StandingToWalkingDetectionsvm} shows the predictions for standing to
+walking movement. In that movement our prediction accuracy is about 89.5\%. In the actual fall
+prediction, SVM can predict fall with 90.5\% accuracy (Shown in table
+\ref{tab:StandingToFallingDetectionsvm}).
+\vspace{-5mm}
+\begin{table}[!h]
+\caption{Standing to seating detection with SVM.}
+	\label{tab:StandingToSeatingDetectionsvm}
+	\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Seating & Standing \\ \hline
+			Actual& Seating & 96 & 4\\ \hline
+			Actual& Standing & 16& 84\\ \hline
+		\end{tabular}
+\end{table}
+\vspace{-10mm}
+\begin{table}[!h]
+	\caption{Standing to walking detection with SVM.}
+	\label{tab:StandingToWalkingDetectionsvm}
+	\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Walking & Standing \\ \hline
+			Actual& Walking & 93 & 07\\ \hline
+			Actual& Standing & 14& 86\\ \hline
+		\end{tabular}
+\end{table}
+\vspace{-10mm}
+\begin{table}[!h]
+	\caption{Standing to falling detection with SVM.}
+	\label{tab:StandingToFallingDetectionsvm}
+	\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Fall & Standing \\ \hline
+			Actual& Fall & 95 & 05\\ \hline
+			Actual& Standing & 14& 86\\ \hline
+		\end{tabular}
+\end{table}
+\vspace{-5mm}
+\subsection{Fall Prediction Within Time Frame}
+
+A falling event does not happen within a single reading from sensors, it is consists of multiple
+reading from sensors.  Its not really accurate to detect a fall or any other motion based on a
+single reading, which might mislead the whole detection procedure. To detect a motion accurately we
+have used a time frame based prediction procedure. In this procedure, we first train our SVM with
+training data. Then we try to detection motion in each sensor reading. We will predict a motion not
+based on a single reading but with all the reading within 100$ms$ time frame. If our detection
+procedure detect a true fall event more than 90\% time, we will denote that event as a true
+falling event. By applying the above algorithm, our predictions are 100\% accuracy.
+Table \ref{tab:StandingToFallingDetectionsvmframe} shows detection of fall within 100$ms$ time
+frame.
+
+\begin{table}[!h]
+\caption{Standing to falling detection within time frame.}
+	\label{tab:StandingToFallingDetectionsvmframe}
+	\centering
+		\begin{tabular} {l l |c |c}
+			& & Predict& Predict \\ 
+			& & Fall & Standing \\ \hline
+			Actual& Fall & 10 & 0\\ \hline
+			Actual& Standing & 0& 10\\ \hline
+		\end{tabular}
+\end{table}
+
+\subsection{NAO Humanoid Robot}
+
+We have used Tiva C microcontroller with sensor hub attached to it to conduction our experiments in
+this section. The device was first uploaded with CSC688 Energia to send information from device to
+NAO though the serial port. The calculations were conducted on the device, while the outcomes were
+serialized to the file system of NAO. We integrated NAO software and CSC688 Energia to send and
+received data from the device and the robot. Figure \ref{fig:attached_device} shows the location in
+which the device was attached. We have used the USB port of the robot to communicate with the
+device.  
+
+
+\begin{figure}[!ht]
+\centering
+ \includegraphics[width=0.25\textwidth] {attached_device}
+ \caption{Tiva C microcontroller with sensor bub was attached to the back of a NAO humanoid robot.}
+ \label{fig:attached_device}
+\end{figure}
+
+We have configured InvenSense MPU-9150: 9-axis MEMS motion sensor on the sensor hub to sample data
+at 100 Hz. We have chosen this value to compensate delays in communications and to cope with the
+constraints provided by the robot. We have used a threshold based method to detect the motions of
+the robot. Specially, we have detected only the normal behaviors such as standing, walking, turning,
+and falling behaviors such as falling back and front. Therefore, we have treated standing, walking
+and turning as one event, while the falling as another event, which amounts to three events. Once
+the thresholds were found from the data, we have increased the sampling rate of the device to 500 Hz
+to detect the events swiftly.  
+
+In order to ...
 
 \section{Related Work}
 TODO:
@@ -284,7 +458,8 @@ LaunchPadRepresentation}. According to Figure \ref{fig:framework}, it is provide
 
 void TestModule1::update(TestRepresentation1& theTestRepresentation1)
 {
-  theTestRepresentation1.leftButton = theTestRepresentation1.rightButton = false;
+  theTestRepresentation1.leftButton = 
+                          theTestRepresentation1.rightButton = false;
 #if defined(ENERGIA)
   if (digitalRead(PUSH1) == LOW)
     theTestRepresentation1.leftButton = true;
