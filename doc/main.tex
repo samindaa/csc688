@@ -155,9 +155,11 @@ humanoid robots. In order to detect motions, we have used InvenSense MPU-9150: 9
 motion tracking sensor on the sensor hub. The module {\sf MPU9150Module} connects to this device
 and provides the representation {\sf MPU9150Representation}. The representation contains
 3-axis accelerometer readings, 3-axis gyroscope readings, 3-axis magnetometer readings, quaternion
-rotation axis of the device, and Euler angles roll, pitch, and yaw. Depending on the experiment,
-the practitioner can change the sampling rate of the sensor. The maximum sampling rate of the
-sensor is 1000$Hz$. This section shows our results, validations, and conclusions.
+rotation axis of the device, and Euler angles roll, pitch, and yaw.  In order to calculate Euler
+angles, we have used the Direction Cosine Matrix (DCM)
+algorithm\footnote{\url{http://www.ti.com/lit/an/slaa518a/slaa518a.pdf}}.  Depending on the
+experiment, the practitioner can change the sampling rate of the sensor.  The maximum sampling rate
+of the sensor is 1000$Hz$. This section shows our results, validations, and conclusions.
 
 \subsection{Able-Bodied Human}
 
@@ -169,7 +171,7 @@ and \item standing to falling\end{inparaenum}. We have collected data based on t
 each data point has twelve fields, where nine fields are from nine reading from sensors and three
 fields (yaw, pitch and roll) are derived from all those sensors reading.
 
-\subsection{Classification using Logistic Regression}
+\subsection*{Classification using Logistic Regression}
 
 In the first part of the data analysis we have put all our collected data together and labeled it
 with specific number to denote the position. We have used multivariate logistic regression model to
@@ -220,7 +222,7 @@ regression can predict fall with 87.5\% accuracy (Shown in table
 		\end{tabular}
 \end{table}
 \vspace{-5mm}
-\subsection{Classification and Validation Using Support Vector Machine}
+\subsection*{Classification and Validation Using Support Vector Machine}
 
 In the second part of the data analysis, we have used support vector machine (SVM) model
 to classify our data. To train the model, we used the same procedure as before, 80\% of
@@ -271,7 +273,7 @@ prediction, SVM can predict fall with 90.5\% accuracy (Shown in table
 		\end{tabular}
 \end{table}
 \vspace{-5mm}
-\subsection{Fall Prediction Within Time Frame}
+\subsection*{Fall Prediction Within Time Frame}
 
 A falling event does not happen within a single reading from sensors, it is consists of multiple
 reading from sensors.  Its not really accurate to detect a fall or any other motion based on a
@@ -291,8 +293,8 @@ frame.
 		\begin{tabular} {l l |c |c}
 			& & Predict& Predict \\ 
 			& & Fall & Standing \\ \hline
-			Actual& Fall & 10 & 0\\ \hline
-			Actual& Standing & 0& 10\\ \hline
+			Actual& Fall & 100 & 0\\ \hline
+			Actual& Standing & 0& 100\\ \hline
 		\end{tabular}
 \end{table}
 
@@ -301,7 +303,7 @@ frame.
 We have used Tiva C microcontroller with sensor hub attached to it to conduction our experiments in
 this section. The device was first uploaded with CSC688 Energia to send information from device to
 NAO though the serial port. The calculations were conducted on the device, while the outcomes were
-serialized to the file system of NAO. We integrated NAO software and CSC688 Energia to send and
+serialized to the file system of NAO. We have integrated NAO software and CSC688 Energia to send and
 received data from the device and the robot. Figure \ref{fig:attached_device} shows the location in
 which the device was attached. We have used the USB port of the robot to communicate with the
 device.  
@@ -313,9 +315,9 @@ device.
  \caption{Tiva C microcontroller with sensor bub was attached to the back of a NAO humanoid robot.}
  \label{fig:attached_device}
 \end{figure}
-
+\vspace{-5mm}
 We have configured InvenSense MPU-9150: 9-axis MEMS motion sensor on the sensor hub to sample data
-at 100 Hz. We have chosen this value to compensate delays in communications and to cope with the
+at 50$Hz$. We have chosen this value to compensate delays in communications and to cope with the
 constraints provided by the robot. We have used a threshold based method to detect the motions of
 the robot. Specially, we have detected only the normal behaviors such as standing, walking, turning,
 and falling behaviors such as falling back and front. Therefore, we have treated standing, walking
@@ -323,7 +325,53 @@ and turning as one event, while the falling as another event, which amounts to t
 the thresholds were found from the data, we have increased the sampling rate of the device to 500 Hz
 to detect the events swiftly.  
 
-In order to ...
+\begin{figure}[!t]
+  \centering
+  \subfloat[Marching.]{\label{fig:tsnedataset_1}\includegraphics[width=0.45\textwidth]
+       {plot1-crop}}
+  \subfloat[Fast walk forward.]{\label{fig:tsnedataset_5}\includegraphics[width=0.45\textwidth]
+       {plot2-crop}}
+\\
+  \subfloat[Slow walk backward.]{\label{fig:tsnedataset_7}\includegraphics[width=0.45\textwidth]
+       {plot3-crop}}
+  \subfloat[Rotate
+counter-clockwise.]{\label{fig:tsnedataset_8}\includegraphics[width=0.45\textwidth]
+       {plot4-crop}}
+       \\
+  \subfloat[Fast walk backward.]{\label{fig:tsnedataset_7}\includegraphics[width=0.45\textwidth]
+       {plot5-crop}}
+  \subfloat[Left side-way walk.]{\label{fig:tsnedataset_8}\includegraphics[width=0.45\textwidth]
+       {plot6-crop}}
+  \caption{The raw and filtered roll and pitch values for normal behaviors of NAO humanoid robot.}
+  \label{fig:normalBehavior}
+\vspace{-6mm}
+\end{figure}
+
+Our NAO robots run {\sf Robocanes} binary, which has been primarily written for soccer
+playing. The walking engine of {\sf Robocanes} conducts primary movements. These movements are
+regulated by linear speeds, $x_v$ and $y_v$, and a rotational speed $\theta_v$. Depending on these
+values, we can let the robot walk (forward, backward, and side-ways), and rotate (clockwise and
+counter-clockwise) with different speeds. Therefore, we have considered \begin{inparaenum}[(1)]
+\item marching ($x_v = 0 , y_v = 0, \theta_v = 0$); \item fast walk forward/backward ($x_v = \pm200
+, y v = 0, \theta_v = 0$); \item \item slow walk forward/backward ($x_v = \pm30 , y_v = 0, \theta_v
+= 0$); \item side-way movements ($x_v = 0, y_v = \pm200, \theta_v = 0$); and  \item rotate
+($x_v = 0 , y_v = 0, \theta_v = \pm 0.5$) \end{inparaenum} as normal behaviors. All other motions
+are considered falling behaviors. 
+
+
+We have used only the roll and the pitch values  to detect relevant events. In order to achieve an
+effective threshold based decision making, first we have filtered the roll, pitch, and
+yaw\footnote{Even though we have not used yaw values, we have filtered them using Kalman filter.}
+values using a Kalman filter \cite{Welch:1995:IKF:897831}. Figure \ref{fig:normalBehavior} shows
+the row and the filtered values of the row and the pitch values for marching, fast walk forward,
+slow walk backward, rotate counter-clockwise, fast walk backward, and left side-way walk. Other
+scenarios show similar plots, and we have refrained from plotting them. The threshold method
+suggests that, if the filtered roll values are within the range $[90\pm15]$ (degrees) and the
+filtered pitch values are within the rage $[0\pm15]$ (degrees), then 100\% accuracy the NAO humanoid
+robot will show the normal behaviors. Otherwise, we can safely assume that the robot is in a fallen
+state.   
+
+
 
 \section{Related Work}
 TODO:
@@ -334,6 +382,7 @@ TODO:
 \bibliographystyle{splncs03}
 \bibliography{references}
 
+\newpage
 \section*{Appendix: Implementation}
 \label{appendix:Implementation}
 CSC688 Energia framework primarily consists of three files: \begin{inparaenum}[(1)] \item
