@@ -7,7 +7,7 @@
 
 #include "PredictionModule.h"
 
-MAKE_MODULE(PredictionModule)
+//MAKE_MODULE(PredictionModule)
 
 PredictionModule::PredictionModule() :
     nbTrainingSample(0), nbMaxTrainingSamples(0), gridResolution(0), nbTilings(0), random(0), x(0), predictor(

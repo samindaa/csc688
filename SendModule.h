@@ -14,12 +14,12 @@
 // Sending representations
 #include "TestRepresentation2.h"
 #include "MPU9150Representation.h"
-#include "PredictionRepresentation.h"
+//#include "PredictionRepresentation.h"
 
 MODULE(SendModule)
   REQUIRES(TestRepresentation2) //
   REQUIRES(MPU9150Representation) //
-  REQUIRES(PredictionRepresentation)
+//  REQUIRES(PredictionRepresentation)
 END_MODULE
 class SendModule: public SendModuleBase
 {

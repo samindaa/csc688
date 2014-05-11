@@ -18,7 +18,7 @@ LaunchPadLogModule::~LaunchPadLogModule()
 
 void LaunchPadLogModule::init()
 {
-  ofs.open("NAO_samples.txt", std::ios::out | std::ios::app);
+  ofs.open("NAO_samples_4.txt", std::ios::out | std::ios::app);
 }
 
 void LaunchPadLogModule::execute()
