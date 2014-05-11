@@ -195,7 +195,7 @@ movement for 200 data points. we can observe that we are able
 to predict this movement with quite good accuracy (approximately 87.5\%). Table
  \ref{tab:StandingToWalkingDetection} shows the results for  standing to walking movement. In this
 movement, our prediction accuracy is about 86\%. In the actual fall prediction logistic
-regression can predict fall with 87.5\% accuracy (Shown in table
+regression can predict fall with 87.5\% accuracy (Shown in Table
  \ref{tab:StandingToFallingDetection}).
 \vspace{-5mm}
 \begin{table}
@@ -222,7 +222,7 @@ regression can predict fall with 87.5\% accuracy (Shown in table
 		\end{tabular}
 \end{table}
 \vspace{-5mm}
-\subsection*{Classification and Validation Using Support Vector Machine}
+\subsection*{Classification and Validation using Support Vector Machine}
 
 In the second part of the data analysis, we have used support vector machine (SVM) model
 to classify our data. To train the model, we used the same procedure as before, 80\% of
@@ -234,7 +234,7 @@ movement for 200 data points. From that table we can observe that we are able to
 movement with quite good accuracy (approximately 90\%). Table
 \ref{tab:StandingToWalkingDetectionsvm} shows the predictions for standing to
 walking movement. In that movement our prediction accuracy is about 89.5\%. In the actual fall
-prediction, SVM can predict fall with 90.5\% accuracy (Shown in table
+prediction, SVM can predict fall with 90.5\% accuracy (Shown in Table
 \ref{tab:StandingToFallingDetectionsvm}).
 \vspace{-5mm}
 \begin{table}[!h]
@@ -273,7 +273,7 @@ prediction, SVM can predict fall with 90.5\% accuracy (Shown in table
 		\end{tabular}
 \end{table}
 \vspace{-5mm}
-\subsection*{Fall Prediction Within Time Frame}
+\subsection*{Fall Prediction within Time Frame}
 
 A falling event does not happen within a single reading from sensors, it is consists of multiple
 reading from sensors.  Its not really accurate to detect a fall or any other motion based on a
@@ -304,15 +304,18 @@ We have used Tiva C microcontroller with sensor hub attached to it to conduction
 this section. The device was first uploaded with CSC688 Energia to send information from device to
 NAO though the serial port. The calculations were conducted on the device, while the outcomes were
 serialized to the file system of NAO. We have integrated NAO software and CSC688 Energia to send and
-received data from the device and the robot. Figure \ref{fig:attached_device} shows the location in
-which the device was attached. We have used the USB port of the robot to communicate with the
-device.  
+received data from the device and the robot. Figure \ref{fig:attached_device}(a) shows the location
+in which the device was attached. Figure \ref{fig:attached_device}(b) shows the Sensor Hub
+BoosterPack. The roll is around x-axis, the pitch is around y-axis, and the yaw is around z-axis. 
+We have used the USB port of the robot to communicate with the device.  
 
 
 \begin{figure}[!ht]
 \centering
- \includegraphics[width=0.25\textwidth] {attached_device}
- \caption{Tiva C microcontroller with sensor bub was attached to the back of a NAO humanoid robot.}
+ \includegraphics[width=0.5\textwidth] {attached_device}
+ \caption{(a) Tiva C microcontroller with sensor bub was attached to the back of a NAO humanoid
+robot; and (b) Sensor Hub BoosterPack. The roll is around x-axis, the pitch is around y-axis, and
+the yaw is around z-axis.}
  \label{fig:attached_device}
 \end{figure}
 \vspace{-5mm}
@@ -371,13 +374,81 @@ filtered pitch values are within the rage $[0\pm15]$ (degrees), then 100\% accur
 robot will show the normal behaviors. Otherwise, we can safely assume that the robot is in a fallen
 state.   
 
+There are four fallen states for the robot: \begin{inparaenum}[(1)] \item fallen
+forwad; \item fallen backward; \item fallen to left side; and \item fallen to right
+side\end{inparaenum}. Figure \ref{fig:fallenBehavior} shows the roll and pitch angles (row and
+filtered) for typical fallen robot. If the filtered roll value is less that 60 degrees, we can
+safely assume that the robot is fallen forward. If the filtered roll values is more than 100
+degrees we can assume that the robot is fallen backward. To detect the events fallen to the left
+and right, we have used the filtered pitch values. If the filtered pitch value is less than -50
+degrees, we can assume that the robot is fallen to the left side, while if the filtered pitch
+values is more than 50 degrees, we can assume that the robot is fallen to the right side. With
+these thresholds for a separate test cases, the thresholding method has detected fallen state 100\%
+accuracy. 
+
+\begin{figure}[!t]
+  \centering
+  \subfloat[Fallen forward.]{\label{fig:tsnedataset_1}\includegraphics[width=0.45\textwidth]
+       {plot1_fallen-crop}}
+  \subfloat[Fallen backward.]{\label{fig:tsnedataset_5}\includegraphics[width=0.45\textwidth]
+       {plot2_fallen-crop}}
+\\
+  \subfloat[Fallen to left side.]{\label{fig:tsnedataset_7}\includegraphics[width=0.45\textwidth]
+       {plot3_fallen-crop}}
+  \subfloat[Fallen to right
+side.]{\label{fig:tsnedataset_8}\includegraphics[width=0.45\textwidth]
+       {plot4_fallen-crop}}      
+  \caption{The raw and filtered roll and pitch values for fallen states of NAO humanoid robot.}
+  \label{fig:fallenBehavior}
+\vspace{-6mm}
+\end{figure}
+
+The range of motion of NAO robot is comparatively limited compared to a able-bodied human.
+Therefore, we are able to obtain satisfactory results for detecting motion event from the
+thresholding method. In future, we are planning to detect specific events such as walking forward
+(fast/slow), and rotating separately. When determining the results, we have sampled the motion
+device data at the rate 50$Hz$. During operation, using the same thresholds, we can sample the
+motion device at higher rates. In future, we are also planning to learn online from accelerometer,
+gyroscope, and magnetometer instead of Euler angles. Even though Euler angles have singularities,
+for our experiments, we operate the device avoiding those singularities.  
 
 
 \section{Related Work}
-TODO:
+
+The microcontrollers and embedded devices provide a flexible platform to build may real world
+applications. In order to build these applications, a practitioner would require  flexible and
+reliable software solutions. A practitioner also may require to use more than one functionality
+provided by the devices to build applications. Energia and TIs software solutions provide
+facilities to build applications to a certain degree, but, they lack methods or systems to integrate
+multiple devices simultaneously without much user burden. In the project, we have provided a
+state-of-the-art open source software solution to build heterogeneous applications on many devices,
+programmed on multiple operating systems. To our knowledge, our open source software solution is the
+first of its kind. 
+
+There has been an increasing interest in detecting human motions using embedded devices. Woon-Sung
+et. al. \cite{baek2013real} proposed  a fall  detection  system  using necklace-shaped tri-axial
+accelerometer  and  gyroscope  sensors  to  classify  the  behavior  and  posture  of  the detection
+ subject. They claim that their  approach  can  successfully  distinguish between  ADL and  fall, 
+with  sensitivities  greater  than  80 \%  and specificities  of  100\%. Ying-Wen et. al.
+\cite{bai2013recognition} proposed an activity monitoring system based on smart phone sensor
+reading and they claim that they can identify human activity with high degree of accuracy. Leno et.
+al. \cite{leone2013supervised} prosed a system to detect event that cause trauma, and disabilities
+using a tri-axial MEMS wearable wireless accelerometer. They have used support vector machine for
+robust classification of different events. There has been similar efforts to detect human motions
+using motion tracking, e.g., \cite{dumitrache2013fall,kumarwearable,liang2012pre}.
+
+Compared the existing methods, we have investigated the possibility of using our software solution
+to detect human motions and human-like motions from able-bodied humans and NAO humanoid robot. To
+our knowledge, we are the first to investigate the prospect of using an external embedded device to
+detect human-like motions on a NAO humanoid robot. 
 
 \section{Conclusion}
-TODO:
+
+In this project, we have proposed an open source software solution to write heterogeneous
+applications on TIs microcontrollers. We have used our software solution to detect motions on
+able-bodied humans and NAO humanoid robots. We have shown that our methods are capable of detecting
+motions with high accuracy. We have used machine learning methods and thresholding methods to
+detect different motions and provided justifications for the success of the applications. 
 
 \bibliographystyle{splncs03}
 \bibliography{references}
