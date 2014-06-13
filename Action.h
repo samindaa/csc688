@@ -23,6 +23,7 @@
 #define ACTION_H_
 
 #include <vector>
+#include "Assert.h"
 
 namespace RLLib
 {
@@ -51,20 +52,14 @@ class Action
 
     T at(const int& i = 0 /*default to a single action*/)
     {
-#if defined(ENERGIA)
+      ASSERT(i < static_cast<int>(values.size()));
       return values[i];
-#else
-      return values.at(i);
-#endif
     }
 
     const T at(const int& i = 0 /*default to a single action*/) const
     {
-#if defined(ENERGIA)
+      ASSERT(i < static_cast<int>(values.size()));
       return values[i];
-#else
-      return values.at(i);
-#endif
     }
 
     int dimension() const
@@ -74,11 +69,8 @@ class Action
 
     void update(const int& i, const T& value)
     {
-#if defined(ENERGIA)
+      ASSERT(i < static_cast<int>(values.size()));
       values[i] = value;
-#else
-      values.at(i) = value;
-#endif
     }
 
     bool operator==(const Action<T>& that) const
@@ -169,29 +161,20 @@ class ActionArray: public Actions<T>
 
     const Action<T>* operator[](const int& index) const
     {
-#if defined(ENERGIA)
+      ASSERT(index < static_cast<int>(Base::actions.size()));
       return Base::actions[index];
-#else
-      return Base::actions.at(index);
-#endif
     }
 
     const Action<T>* at(const int& index) const
     {
-#if defined(ENERGIA)
+      ASSERT(index < static_cast<int>(Base::actions.size()));
       return Base::actions[index];
-#else
-      return Base::actions.at(index);
-#endif
     }
 
     void push_back(const int& index, const T& value)
     {
-#if defined(ENERGIA)
+      ASSERT(index < static_cast<int>(Base::actions.size()));
       Base::actions[index]->push_back(value);
-#else
-      Base::actions.at(index)->push_back(value);
-#endif
     }
 
     void erase(const int& index)
@@ -211,11 +194,8 @@ class ActionArray: public Actions<T>
 
     void update(const int& actionIndex, const int& vectorIndex, const T& value)
     {
-#if defined(ENERGIA)
+      ASSERT(actionIndex < static_cast<int>(Base::actions.size()));
       Base::actions[actionIndex]->update(vectorIndex, value);
-#else
-      Base::actions.at(actionIndex)->update(vectorIndex, value);
-#endif
     }
 
     int dimension() const

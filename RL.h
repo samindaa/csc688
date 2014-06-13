@@ -22,7 +22,7 @@
 #ifndef RL_H_
 #define RL_H_
 
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
 #include <typeinfo>
 #endif
 
@@ -30,7 +30,10 @@
 #include "Action.h"
 #include "Math.h"
 #include "Control.h"
-//#include "Timer.h"
+
+#if !defined(EMBEDDED_MODE)
+#include "Timer.h"
+#endif
 
 namespace RLLib
 {
@@ -198,12 +201,27 @@ class RLProblem
     }
 
   public:
-    virtual void initialize() {} //=0;
-    virtual void step(const Action<T>* action) {} //=0;
-    virtual void updateRTStep() {} //=0;
-    virtual bool endOfEpisode() const {return false;} //=0;
-    virtual T r() const {return T(0);} //=0;
-    virtual T z() const {return T(0);} //=0;
+    virtual void initialize()
+    {
+    } //=0;
+    virtual void step(const Action<T>* action)
+    {
+    } //=0;
+    virtual void updateRTStep()
+    {
+    } //=0;
+    virtual bool endOfEpisode() const
+    {
+      return false;
+    } //=0;
+    virtual T r() const
+    {
+      return T(0);
+    } //=0;
+    virtual T z() const
+    {
+      return T(0);
+    } //=0;
 
     virtual void draw() const
     {/*To output useful information*/
@@ -279,10 +297,12 @@ class Simulator
     bool endingOfEpisode;
     bool verbose;
 
-    //Timer timer;
+#if !defined(EMBEDDED_MODE)
+    Timer timer;
+#endif
     T totalTimeInMilliseconds;
 
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     std::vector<T> statistics;
 #endif
     bool enableStatistics;
@@ -336,7 +356,7 @@ class Simulator
 
     void benchmark()
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       T xbar = std::accumulate(statistics.begin(), statistics.end(), 0.0f) / (T(statistics.size()));
       std::cout << std::endl;
       std::cout << "## Average: length=" << xbar;
@@ -387,15 +407,19 @@ class Simulator
         episodeZ += step->z_tp1;
         endingOfEpisode = step->endOfEpisode || (timeStep == maxEpisodeTimeSteps);
         //step->setForcedEndOfEpisode(endingOfEpisode);
-        //timer.start();
+#if !defined(EMBEDDED_MODE)
+        timer.start();
+#endif
         agentAction = agent->getAtp1(step);
-        //timer.stop();
-        //totalTimeInMilliseconds += timer.getElapsedTimeInMilliSec();
+#if !defined(EMBEDDED_MODE)
+        timer.stop();
+        totalTimeInMilliseconds += timer.getElapsedTimeInMilliSec();
+#endif
       }
 
       if (endingOfEpisode/*The episode is just ended*/)
       {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
         if (verbose)
         {
           T averageTimePerStep = totalTimeInMilliseconds / timeStep;
@@ -437,7 +461,7 @@ class Simulator
 
     void runEvaluate(const int& nbEpisodes = 20, const int& nbRuns = 1)
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "\n@@ Evaluate=" << enableTestEpisodesAfterEachRun << std::endl;
 #endif
       RLAgent<T>* evaluateAgent = new ControlAgent<T>(agent->getRLAgent());
@@ -450,9 +474,7 @@ class Simulator
 
     void run()
     {
-#if !defined(ENERGIA)
-      if (verbose)
-        std::cout << "## ControlLearner=" << typeid(*agent).name() << std::endl;
+#if !defined(EMBEDDED_MODE)
       for (int run = 0; run < nbRuns; run++)
       {
         if (verbose)
@@ -499,7 +521,7 @@ class Simulator
 
     void computeValueFunction(const char* outFile = "visualization/valueFunction.txt") const
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       if (problem->dimension() == 2) // only for two state variables
       {
         std::ofstream out(outFile);

@@ -9,6 +9,10 @@
 #define FRAMEWORK_H_
 
 #if defined(ENERGIA)
+#define EMBEDDED_MODE
+#endif
+
+#if defined(EMBEDDED_MODE)
 #include "Energia.h"
 #include "pins_energia.h"
 #else
@@ -17,6 +21,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <iostream>
+#endif
+//
+#if !defined(EMBEDDED_MODE)
+#include "Config.h"
 #endif
 
 /**
@@ -174,6 +182,9 @@ class Node
 
 class Module : public Node
 {
+#if !defined(EMBEDDED_MODE)
+  public: Config config;
+#endif
   public: Module() : Node()       {}
   public: virtual ~Module()       {}
   public: virtual void init()     {}
@@ -235,13 +246,16 @@ class Graph
     TopoQueue topoQueue;
     GraphOutput graphOutput;
     bool errorState;
-#if defined(ENERGIA)
+#if defined(EMBEDDED_MODE)
     typedef String ErrorMsg;
 #else
     typedef std::string ErrorMsg;
 #endif
     ErrorMsg errorMsg;
+
+#if defined(EMBEDDED_MODE)
     unsigned long baudRate;
+#endif
 
     static Graph& getInstance();
     static void deleteInstance();
@@ -256,8 +270,11 @@ class Graph
     void topoSort();
     void graphOutputInit();
     void graphOutputUpdate();
+
+#if defined(EMBEDDED_MODE)
     void setBaudRate(const unsigned long& baudRate);
     unsigned long getBaudRate() const;
+#endif
 
   private:
     void errorHandler();

@@ -192,7 +192,7 @@ class MaxLengthTrace: public Trace<T>
         trace(trace), maximumLength(maximumLength)
     {
       const SparseVector<T>* v = (const SparseVector<T>*) trace->vect();
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       if (!v)
         std::cerr << "MaxLengthTraces supports only traces SparseVector<T>" << std::endl;
 #endif

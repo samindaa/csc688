@@ -288,7 +288,7 @@ class K1: public LearningAlgorithm<T>, public LinearLearner<T>
         const Vector<T>* piX, const T& delta)
     {
       Vector<T>* piX2 = pool->newVector(x2)->ebeMultiplyToSelf(pi);
-      const SparseVector<T>* sresult = dynamic_cast<const SparseVector<T>*>(piX2);
+      const SparseVector<T>* sresult = RTTI<T>::constSparseVector(piX2);
       if (sresult)
       {
         const int* activeIndexes = sresult->nonZeroIndexes();
@@ -384,7 +384,7 @@ class Autostep: public LearningAlgorithm<T>, public LinearLearner<T>
           x2)->ebeMultiplyToSelf(alphas);
       v->addToSelf(1.0f / tau, vUpdate);
       Vectors<T>::positiveMaxToSelf(v, absDeltaXH);
-      Vectors<T>::multiplySelfByExponential(dynamic_cast<DenseVector<T>*>(alphas), kappa,
+      Vectors<T>::multiplySelfByExponential(RTTI<T>::denseVector(alphas), kappa,
           deltaXH->ebeDivideToSelf(v), minimumStepsize);
       Vector<T>* x2ByAlphas = pool->newVector(x2)->ebeMultiplyToSelf(alphas);
       T sum = x2ByAlphas->sum();

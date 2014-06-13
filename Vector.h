@@ -22,7 +22,9 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
-#if !defined(ENERGIA)
+#include "Assert.h"
+
+#if !defined(EMBEDDED_MODE)
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -34,8 +36,6 @@
 #include <cmath>
 #include <vector>
 #include <cstdio>
-#include "Assert.h"
-
 
 namespace RLLib
 {
@@ -43,7 +43,7 @@ namespace RLLib
 /**
  * Forward declarations
  */
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
 template<class T> class DenseVector;
 template<class T> class SparseVector;
 template<class T> std::ostream& operator<<(std::ostream& out, const DenseVector<T>& that);
@@ -58,6 +58,25 @@ template<class T>
 class Vector
 {
   public:
+    /**
+     * Using this to cast is faster that using dynamic_cast<>
+     */
+    enum VectorType
+    {
+      BASE_VECTOR,
+      DENSE_VECTOR,
+      SPARSE_VECTOR
+    };
+
+  private:
+    VectorType vectorType;
+
+  public:
+    Vector(const VectorType& vectorType) :
+        vectorType(vectorType)
+    {
+    }
+
     virtual ~Vector()
     {
     }
@@ -104,16 +123,14 @@ class Vector
     virtual void persist(const char* f) const =0;
     virtual void resurrect(const char* f) =0;
 
-    // IF NO RTTI
-    enum RTTI
+    // Return the type of the vector for alternative dynamic checks.
+    virtual VectorType getVectorType() const
     {
-      DENSE_VECTOR, SPARSE_VECTOR
-    };
-
-    virtual RTTI getRTTI() const =0;
+      return vectorType;
+    }
 
   protected:
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     template<class U> void write(std::ostream &o, U& value) const
     {
       char *s = (char *) &value;
@@ -134,11 +151,10 @@ class DenseVector: public Vector<T>
   protected:
     int capacity;
     T* data;
-    typename Vector<T>::RTTI rtti;
 
   public:
     DenseVector(const int& capacity = 1) :
-        capacity(capacity), data(new T[capacity]), rtti(Vector<T>::DENSE_VECTOR)
+        Vector<T>(Vector<T>::DENSE_VECTOR), capacity(capacity), data(new T[capacity])
     {
       std::fill(data, data + capacity, 0);
     }
@@ -150,7 +166,7 @@ class DenseVector: public Vector<T>
 
     // Implementation details for copy constructor and operator
     DenseVector(const DenseVector<T>& that) :
-        capacity(that.capacity), data(new T[that.capacity])
+        Vector<T>(Vector<T>::DENSE_VECTOR), capacity(that.capacity), data(new T[that.capacity])
     {
       std::copy(that.data, that.data + that.capacity, data);
     }
@@ -303,7 +319,7 @@ class DenseVector: public Vector<T>
 
     void persist(const char* f) const
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::ofstream of;
       of.open(f, std::ofstream::out);
       if (of.is_open())
@@ -328,7 +344,7 @@ class DenseVector: public Vector<T>
 
     void resurrect(const char* f)
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::ifstream ifs;
       ifs.open(f, std::ifstream::in);
       if (ifs.is_open())
@@ -359,12 +375,7 @@ class DenseVector: public Vector<T>
 #endif
     }
 
-    typename Vector<T>::RTTI getRTTI() const
-    {
-      return rtti;
-    }
-
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     template<class O> friend std::ostream& operator<<(std::ostream& out,
         const DenseVector<O>& that);
 #endif
@@ -386,13 +397,12 @@ class SparseVector: public Vector<T>
     int* indexesPosition;
     int* activeIndexes;
     T* values;
-    typename Vector<T>::RTTI rtti;
 
   public:
     SparseVector(const int& capacity = 1, const int& activeIndexesLength = 10) :
-        indexesPositionLength(capacity), activeIndexesLength(activeIndexesLength), nbActive(0), indexesPosition(
-            new int[indexesPositionLength]), activeIndexes(new int[activeIndexesLength]), values(
-            new T[activeIndexesLength]), rtti(Vector<T>::SPARSE_VECTOR)
+        Vector<T>(Vector<T>::SPARSE_VECTOR), indexesPositionLength(capacity), activeIndexesLength(
+            activeIndexesLength), nbActive(0), indexesPosition(new int[indexesPositionLength]), activeIndexes(
+            new int[activeIndexesLength]), values(new T[activeIndexesLength])
     {
       std::fill(indexesPosition, indexesPosition + capacity, -1);
     }
@@ -405,7 +415,7 @@ class SparseVector: public Vector<T>
     }
 
     SparseVector(const SparseVector<T>& that) :
-        indexesPositionLength(that.indexesPositionLength), activeIndexesLength(
+        Vector<T>(Vector<T>::SPARSE_VECTOR), indexesPositionLength(that.indexesPositionLength), activeIndexesLength(
             that.activeIndexesLength), nbActive(that.nbActive), indexesPosition(
             new int[that.indexesPositionLength]), activeIndexes(new int[that.activeIndexesLength]), values(
             new T[that.activeIndexesLength])
@@ -629,7 +639,7 @@ class SparseVector: public Vector<T>
 
     void persist(const char* f) const
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::ofstream of;
       of.open(f, std::ofstream::out);
       if (of.is_open())
@@ -662,7 +672,7 @@ class SparseVector: public Vector<T>
 
     void resurrect(const char* f)
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::ifstream ifs;
       ifs.open(f, std::ifstream::in);
       if (ifs.is_open())
@@ -707,44 +717,44 @@ class SparseVector: public Vector<T>
 #endif
     }
 
-    typename Vector<T>::RTTI getRTTI() const
-    {
-      return rtti;
-    }
-
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     template<class O> friend std::ostream& operator<<(std::ostream& out,
         const SparseVector<O>& that);
 #endif
 
 };
 
-//RTTI Fix
+/**
+ * RLLibs' dynamic_cast<> alternative to support multiple architectures.
+ */
 template<class T>
 class RTTI
 {
   public:
     static SparseVector<T>* sparseVector(Vector<T>* that)
     {
-      return that->getRTTI() == Vector<T>::SPARSE_VECTOR ? static_cast<SparseVector<T>*>(that) : 0;
+      return
+          that->getVectorType() == Vector<T>::SPARSE_VECTOR ?
+              static_cast<SparseVector<T>*>(that) : 0;
     }
 
     static const SparseVector<T>* constSparseVector(const Vector<T>* that)
     {
       return
-          that->getRTTI() == Vector<T>::SPARSE_VECTOR ?
+          that->getVectorType() == Vector<T>::SPARSE_VECTOR ?
               static_cast<const SparseVector<T>*>(that) : 0;
     }
 
     static DenseVector<T>* denseVector(Vector<T>* that)
     {
-      return that->getRTTI() == Vector<T>::DENSE_VECTOR ? static_cast<DenseVector<T>*>(that) : 0;
+      return
+          that->getVectorType() == Vector<T>::DENSE_VECTOR ? static_cast<DenseVector<T>*>(that) : 0;
     }
 
     static const DenseVector<T>* constDenseVector(const Vector<T>* that)
     {
       return
-          that->getRTTI() == Vector<T>::DENSE_VECTOR ?
+          that->getVectorType() == Vector<T>::DENSE_VECTOR ?
               static_cast<const DenseVector<T>*>(that) : 0;
     }
 };
@@ -1194,7 +1204,7 @@ class Vectors
 
     void persist(const char* f) const
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       int i = 0;
       for (typename Vectors<T>::const_iterator iter = begin(); iter != end(); ++iter)
       {
@@ -1202,7 +1212,7 @@ class Vectors
         std::stringstream ss;
         ss << "." << i;
         fi.append(ss.str());
-        (*iter)->persist(fi);
+        (*iter)->persist(fi.c_str());
         ++i;
       }
 #endif
@@ -1210,7 +1220,7 @@ class Vectors
 
     void resurrect(const char* f) const
     {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       int i = 0;
       for (typename Vectors<T>::const_iterator iter = begin(); iter != end(); ++iter)
       {
@@ -1218,7 +1228,7 @@ class Vectors
         std::stringstream ss;
         ss << "." << i;
         fi.append(ss.str());
-        (*iter)->resurrect(fi);
+        (*iter)->resurrect(fi.c_str());
         ++i;
       }
 #endif
@@ -1413,7 +1423,8 @@ class VectorPool
     int nbAllocation;
     int dimension;
   public:
-    VectorPool(const int& dimension) : nbAllocation(0), dimension(dimension)
+    VectorPool(const int& dimension) :
+        nbAllocation(0), dimension(dimension)
     {
     }
 
@@ -1440,7 +1451,7 @@ class VectorPool
     }
 };
 
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
 // Global implementations
 template<class T>
 std::ostream& operator<<(std::ostream& out, const DenseVector<T>& that)

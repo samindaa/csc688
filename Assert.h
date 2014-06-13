@@ -14,7 +14,13 @@
 // will be for procedure arguments.
 //
 //*****************************************************************************
+
+// Energia binding
 #if defined(ENERGIA)
+#define EMBEDDED_MODE
+#endif
+
+#if defined(EMBEDDED_MODE)
 #include "Energia.h"
 #else
 #include <cstdio>
@@ -34,7 +40,7 @@
                      while(0)
 #endif /* NDEBUG */
 
-#if defined(ENERGIA)
+#if defined(EMBEDDED_MODE)
 #define __ASSERT(__func, __file, __lineno, __sexp)                                         \
   do                                                                                       \
   {                                                                                        \

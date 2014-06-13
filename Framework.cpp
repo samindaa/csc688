@@ -7,7 +7,7 @@
 
 #include "Framework.h"
 
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
 #include <fstream>
 #endif
 
@@ -16,8 +16,11 @@
 Graph* Graph::theInstance = 0;
 
 Graph::Graph() :
-    errorState(false), baudRate(115200)
+    errorState(false)
 {
+#if defined(EMBEDDED_MODE)
+  baudRate = 115200;
+#endif
 }
 
 Graph::~Graph()
@@ -35,7 +38,7 @@ void Graph::addModule(Node* theInstance)
       errorMsg += (" moduleByName=");
       errorMsg += (theInstance->getName());
       errorMsg += ("exists!");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
@@ -62,7 +65,7 @@ void Graph::providedRepresentation(const char* moduleName, Node* theInstance,
       errorMsg += (theInstance->getName());
       errorMsg += (" exists, and  providedModuleName=");
       errorMsg += (representationVector[iter]->providedModuleName);
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
@@ -103,7 +106,7 @@ Node* Graph::getRepresentation(const char* representationName)
       {
         errorMsg += (" missing representation. representationName=");
         errorMsg += (representationName);
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
         std::cerr << " ERROR!" << errorMsg << std::endl;
         exit(1);
 #else
@@ -115,7 +118,7 @@ Node* Graph::getRepresentation(const char* representationName)
   }
   errorMsg += (" this should not happen. representationName=");
   errorMsg += (representationName);
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
   // This is a double check and nothing should enter at this point
   std::cerr << "ERROR!" << errorMsg << std::endl;
   exit(1);
@@ -183,7 +186,7 @@ void Graph::computeGraph()
       errorMsg += (" requiredModuleName=");
       errorMsg += (moduleRepresentationEntry->requiredModuleName);
       errorMsg += (" is missing!");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "ERROR!" << errorMsg << std::endl;
 #else
       errorState = true;
@@ -195,14 +198,14 @@ void Graph::computeGraph()
       errorMsg += (moduleRepresentationEntry->requiredRepresentationName);
       errorMsg += (" is missing! for requiredModuleName=");
       errorMsg += (moduleRepresentationEntry->requiredModuleName);
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "ERROR!" << errorMsg << std::endl;
 #endif
     }
     if (!(moduleNode && representationNode))
     {
       errorMsg += (" moduleNode and/or representationNode are NULL!");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cerr << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
@@ -240,7 +243,7 @@ void Graph::computeGraph()
     if (!(moduleNode && representationNode))
     {
       errorMsg += (" moduleNode and representationNode are NULL!");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cerr << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
@@ -290,7 +293,7 @@ void Graph::topoSort()
         errorMsg += ("\n");
         ++tabCounter;
       }
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
       std::cout << "ERROR!" << errorMsg << std::endl;
       exit(1);
 #else
@@ -312,9 +315,9 @@ void Graph::topoSort()
   if (graphOutput.size() != graphStructureVector.size())
   {
     errorMsg += (" cycle detected! ");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     std::cout << "ERROR!" << errorMsg << (int) graphOutput.size() << " "
-    << (int) graphStructureVector.size() << std::endl;
+        << (int) graphStructureVector.size() << std::endl;
     exit(1);
 #else
     errorState = true;
@@ -325,7 +328,7 @@ void Graph::topoSort()
   if (graphOutput.size() != graphStructureVector.size())
   {
     errorMsg += ("graphOutput.size() != graphStructureVector.size()");
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
     std::cerr << "ERROR!" << errorMsg << std::endl;
     exit(1);
 #else
@@ -347,8 +350,14 @@ void Graph::graphOutputInit()
     Node* node = graphOutput[iter];
     if (node->isComputationNode())
     {
-      ((Module*) node)->init();
-#if defined(ENERGIA)
+      Module* module = (Module*) node;
+#if !defined(EMBEDDED_MODE)
+      module->config.setName(module->getName());
+      module->config.setPath("config");
+      module->config.resurrect();
+#endif
+      module->init();
+#if defined(EMBEDDED_MODE)
       Serial.println(node->getName());
 #endif
     }
@@ -373,6 +382,7 @@ void Graph::graphOutputUpdate()
 
 }
 
+#if defined(EMBEDDED_MODE)
 void Graph::setBaudRate(const unsigned long& baudRate)
 {
   this->baudRate = baudRate;
@@ -382,11 +392,12 @@ unsigned long Graph::getBaudRate() const
 {
   return baudRate;
 }
+#endif
 
 void Graph::errorHandler()
 {
 
-#if defined(ENERGIA)
+#if defined(EMBEDDED_MODE)
   if (errorState)
   {
     Serial.begin(baudRate);
@@ -439,7 +450,7 @@ void Graph::purgeEntries()
 
 void Graph::stream()
 {
-#if !defined(ENERGIA)
+#if !defined(EMBEDDED_MODE)
   std::cout << std::endl << std::endl;
   // This shows the raw graph
   std::cout << "moduleVector.size()=" << (int) moduleVector.size() << std::endl;
@@ -455,7 +466,7 @@ void Graph::stream()
   {
     const Graph::RepresentationEntry* representationEntry = representationVector[iter];
     std::cout << representationEntry->representationNode->getName() << " "
-    << representationEntry->providedModuleName << std::endl;
+        << representationEntry->providedModuleName << std::endl;
   }
 
   std::cout << std::endl;
@@ -491,15 +502,16 @@ void Graph::stream()
     {
       const Node* x = graphOutput[iter];
       if (x->isComputationNode())
-      graph << " " << x->getName() << "; \n";
+        graph << " " << x->getName() << "; \n";
     }
     graph << "\n";
-    graph << "\t node [shape=ellipse, fillcolor=\"gold:yellow\", style=filled, gradientangle=270]; \n";
+    graph
+        << "\t node [shape=ellipse, fillcolor=\"gold:yellow\", style=filled, gradientangle=270]; \n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
     {
       Node* x = graphOutput[iter];
       if (!x->isComputationNode())
-      graph << " " << x->getName() << "; \n";
+        graph << " " << x->getName() << "; \n";
     }
     graph << "\n";
     for (int iter = 0; iter < graphOutput.size(); iter++)
@@ -511,9 +523,9 @@ void Graph::stream()
         {
           Node* y = x->getNextNodes()[j];
           if (y->isComputationNode())
-          graph << "edge [color=black]; \n";
+            graph << "edge [color=black]; \n";
           else
-          graph << "edge [color=blue]; \n";
+            graph << "edge [color=blue]; \n";
           graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
         }
       }
@@ -557,7 +569,18 @@ Graph& Graph::getInstance()
 void Graph::deleteInstance()
 {
   if (theInstance)
+  {
+#if !defined(EMBEDDED_MODE)
+    // Release()
+    for (int iter = 0; iter < theInstance->graphOutput.size(); iter++)
+    {
+      Node* node = theInstance->graphOutput[iter];
+      if (node->isComputationNode())
+        ((Module*) node)->config.persist();
+    }
+#endif
     delete theInstance;
+  }
   theInstance = 0;
 }
 

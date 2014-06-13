@@ -22,6 +22,7 @@
 #ifndef STATETOSTATEACTION_H_
 #define STATETOSTATEACTION_H_
 
+#include <vector>
 #include "Action.h"
 #include "Vector.h"
 #include "Projector.h"
@@ -38,9 +39,11 @@ class Representations
   public:
     Representations(const int& numFeatures, const Actions<T>* actions)
     {
-      for (int i = 0; i < actions->dimension(); i++)
+      for (typename Actions<T>::const_iterator iter = actions->begin(); iter != actions->end();
+          ++iter)
         phis.push_back(new SVector<T>(numFeatures));
     }
+
     ~Representations()
     {
       for (typename std::vector<Vector<T>*>::iterator iter = phis.begin(); iter != phis.end();
@@ -56,52 +59,20 @@ class Representations
 
     void set(const Vector<T>* phi, const Action<T>* action)
     {
-#if defined(ENERGIA)
+      ASSERT(action->id() < static_cast<int>(phis.size()));
       phis[action->id()]->set(phi);
-#else
-      phis.at(action->id())->set(phi);
-#endif
     }
 
     Vector<T>* at(const Action<T>* action)
     {
-#if defined(ENERGIA)
+      ASSERT(action->id() < static_cast<int>(phis.size()));
       return phis[action->id()];
-#else
-      return phis.at(action->id());
-#endif
     }
 
     const Vector<T>* at(const Action<T>* action) const
     {
-#if defined(ENERGIA)
+      ASSERT(action->id() < static_cast<int>(phis.size()));
       return phis[action->id()];
-#else
-      return phis.at(action->id());
-#endif
-    }
-
-    typedef typename std::vector<Vector<T>*>::iterator iterator;
-    typedef typename std::vector<Vector<T>*>::const_iterator const_iterator;
-
-    iterator begin()
-    {
-      return phis.begin();
-    }
-
-    iterator end()
-    {
-      return phis.end();
-    }
-
-    const_iterator begin() const
-    {
-      return phis.begin();
-    }
-
-    const_iterator end() const
-    {
-      return phis.end();
     }
 
     void clear()
@@ -223,9 +194,7 @@ class TabularAction: public StateToStateAction<T>
 
     const Representations<T>* stateActions(const Vector<T>* x)
     {
-#if !defined(ENERGIA)
-      assert(actions->dimension() == phis->dimension());
-#endif
+      ASSERT(actions->dimension() == phis->dimension());
       for (typename Actions<T>::const_iterator a = actions->begin(); a != actions->end(); ++a)
         phis->set(stateAction(x, *a), *a);
       return phis;

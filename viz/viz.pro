@@ -24,6 +24,7 @@ SOURCES += Main.cpp \
 	VizObject.cpp \
 	VizModule.cpp \
         plot/qcustomplot.cpp \
+        ../Config.cpp \
 	../Framework.cpp \
 	../nao/RS232Module.cpp \
 	../nao/rs232.cpp
@@ -34,6 +35,7 @@ HEADERS  += Plot.h \
 	VizObject.h \
 	VizModule.h \
 	plot/qcustomplot.h \
+        ../Config.h \
 	../Template.h \
 	../Framework.h \
 	../FloatDetails.h \
