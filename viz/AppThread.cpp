@@ -16,17 +16,7 @@ AppThread::~AppThread()
 {
 }
 
-void AppThread::init()
-{
-  Graph& graph = Graph::getInstance();
-  graph.computeGraph();
-  graph.topoSort();
-  graph.stream();
-  graph.graphOutputInit();
-}
-
 void AppThread::run()
 {
-  while (true)
-    Graph::getInstance().graphOutputUpdate();
+  Controller::getInstance().main(false);
 }

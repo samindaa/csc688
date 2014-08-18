@@ -7,6 +7,8 @@
 
 #include "TestModule1.h"
 
+MAKE_MODULE(TestModule1)
+
 void TestModule1::update(TestRepresentation1& theTestRepresentation1)
 {
   theTestRepresentation1.leftButton = theTestRepresentation1.rightButton = false;
@@ -17,6 +19,3 @@ void TestModule1::update(TestRepresentation1& theTestRepresentation1)
     theTestRepresentation1.rightButton = true;
 #endif
 }
-
-MAKE_MODULE(TestModule1)
-

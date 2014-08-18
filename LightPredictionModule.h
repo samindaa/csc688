@@ -47,9 +47,7 @@ class LightPredictionModule: public LightPredictionModuleBase
   public:
     LightPredictionModule();
     ~LightPredictionModule();
-
     void update(PredictionRepresentation& thePredictionRepresentation);
-
 };
 
 #endif /* LIGHTPREDICTIONMODULE_H_ */

@@ -10,6 +10,8 @@
 #include "Wire.h"
 #endif
 
+MAKE_MODULE(MPU9150Module)
+
 //*****************************************************************************
 //
 // Define MPU9150 data sampling frequency.
@@ -549,4 +551,3 @@ void MPU9150Module::debug(const char* msg, const float& fValue)
   Serial.println(fValue, 3);
 #endif
 }
-MAKE_MODULE(MPU9150Module)

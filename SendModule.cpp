@@ -7,6 +7,8 @@
 
 #include "SendModule.h"
 
+MAKE_MODULE(SendModule)
+
 void SendModule::execute()
 {
 #if defined(ENERGIA)
@@ -47,6 +49,3 @@ void SendModule::floatToBytes(const float& value)
   Serial.print(" ");
 #endif
 }
-
-MAKE_MODULE(SendModule)
-

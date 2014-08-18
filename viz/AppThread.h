@@ -18,7 +18,6 @@ class AppThread: public QThread
   public:
     explicit AppThread(QObject * parent = 0);
     virtual ~AppThread();
-    void init();
 
   protected:
     void run();

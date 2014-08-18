@@ -26,7 +26,6 @@ int main(int argc, char** argv)
   VizObject::getInstance().push_back(window->getPlot());
 
   AppThread* appThread = new AppThread;
-  appThread->init();
   appThread->start();
 
   return a.exec();

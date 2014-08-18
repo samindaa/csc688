@@ -7,6 +7,8 @@
 
 #include "ISL29023Module.h"
 
+MAKE_MODULE(ISL29023Module)
+
 #if defined(ENERGIA)
 #include "Wire.h"
 #endif
@@ -278,6 +280,3 @@ void ISL29023Module::ISL29023AppAdjustRange(ISL29023Representation& theISL29023R
   }
 #endif
 }
-
-MAKE_MODULE(ISL29023Module)
-

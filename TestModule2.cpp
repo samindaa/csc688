@@ -7,6 +7,8 @@
 
 #include "TestModule2.h"
 
+MAKE_MODULE(TestModule2)
+
 TestModule2::TestModule2() :
     ledState(0x01), prevTime(0), collectData(false)
 {
@@ -70,6 +72,4 @@ void TestModule2::update(TestRepresentation2& theTestRepresentation2)
 void TestModule2::update(TestRepresentation3& theTestRepresentation3)
 {
 }
-
-MAKE_MODULE(TestModule2)
 

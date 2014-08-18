@@ -7,7 +7,9 @@
 
 #include "Config.h"
 
-#if !defined(EMBEDDED_MODE)
+#if defined(EMBEDDED_MODE)
+#else
+//
 #include <fstream>
 #include <cstdlib>
 #include <string>
@@ -15,36 +17,35 @@
 #include <cassert>
 
 Config::Config() :
-    values(new HashMap), modified(false), persistenceMode(true)
+    modified(false), persistenceMode(true)
 {
 }
 
-Config::Config(const std::string name, const std::string path) :
-    values(new HashMap), name(name), path(path), modified(false), persistenceMode(true)
+Config::Config(const std::string& name, const std::string& path) :
+    name(name), path(path), modified(false), persistenceMode(true)
 {
 }
 
 Config::~Config()
 {
-  delete values;
 }
 
-void Config::setName(const std::string name)
+void Config::setName(const std::string& name)
 {
   this->name = name;
 }
 
-void Config::setPath(const std::string path)
+void Config::setPath(const std::string& path)
 {
   this->path = path;
 }
 
-void Config::setPersist(const bool persistenceMode)
+void Config::setPersist(const bool& persistenceMode)
 {
   this->persistenceMode = persistenceMode;
 }
 
-inline void configSplit(const std::string &s, char delim, std::vector<std::string> &tokens)
+inline void configSplit(const std::string &s, const char& delim, std::vector<std::string>& tokens)
 {
   std::stringstream ss(s);
   std::string item;
@@ -76,7 +77,7 @@ void Config::resurrect()
           std::vector<std::string> tokens;
           configSplit(str, '=', tokens);
           assert(tokens.size() == 2); // Only name=value pairs
-          values->insert(std::make_pair(tokens[0], tokens[1]));
+          values.insert(std::make_pair(tokens[0], tokens[1]));
         }
       }
     }
@@ -105,7 +106,7 @@ void Config::persist()
       std::ofstream outputStream(output.c_str());
       if (outputStream.is_open())
       {
-        for (HashMap::const_iterator iter = values->begin(); iter != values->end(); ++iter)
+        for (Values::const_iterator iter = values.begin(); iter != values.end(); ++iter)
           outputStream << iter->first << "=" << iter->second << std::endl;
       }
       else

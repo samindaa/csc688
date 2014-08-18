@@ -14,7 +14,7 @@
 #include "../Template.h"
 #endif
 
-#include "rs232.h"
+#include "../SerialPort.h"
 #include <vector>
 #include <iterator>
 #include <iostream>

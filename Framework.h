@@ -11,19 +11,16 @@
 #if defined(ENERGIA)
 #define EMBEDDED_MODE
 #endif
-
+//
 #if defined(EMBEDDED_MODE)
 #include "Energia.h"
 #include "pins_energia.h"
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <iostream>
 #endif
 //
+#include <string.h>
+//
 #if !defined(EMBEDDED_MODE)
+#include <mutex>
 #include "Config.h"
 #endif
 
@@ -39,6 +36,10 @@
 template<typename T>
 class Vector
 {
+  public:
+    typedef T* iterator;
+    typedef const T* const_iterator;
+
   private:
     int theSize;
     int theCapacity;
@@ -56,10 +57,9 @@ class Vector
       operator=(that);
     }
 
-    ~Vector()
+    virtual ~Vector()
     {
-      if (objects)
-        free(objects);
+      clear();
     }
 
     const Vector & operator=(const Vector& that)
@@ -128,7 +128,7 @@ class Vector
       --theSize;
     }
 
-    void purge()
+    void clear()
     {
       theSize = 0;
       theCapacity = 0;
@@ -137,7 +137,108 @@ class Vector
       objects = 0;
     }
 
+    iterator begin()             { return objects; }
+    iterator end()               { return objects + theSize; }
+    const_iterator begin() const { return objects; }
+    const_iterator end()   const { return objects + theSize; }
+
 };
+
+// Streams
+class ObjectInputStream
+{
+  public:
+    virtual ~ObjectInputStream() {}
+    virtual void read(unsigned char* destination, const int& size) =0;
+};
+
+class ObjectOutputStream
+{
+  public:
+    virtual ~ObjectOutputStream() {}
+    virtual void write(const unsigned char* source, const int& size) =0;
+};
+
+class BufferInputOutputStream : public ObjectInputStream, public ObjectOutputStream
+{
+  public:
+    unsigned char* buffer;
+    int bufferLocation;
+
+    BufferInputOutputStream(unsigned char* buffer) : buffer(buffer), bufferLocation(0) {}
+    virtual ~BufferInputOutputStream() {}
+    void read(unsigned char* destination, const int& size) { memcpy(destination, buffer + bufferLocation, size); bufferLocation += size; }
+    void write(const unsigned char* source, const int& size) { memcpy(buffer + bufferLocation, source, size); bufferLocation += size; }
+    void reset() { bufferLocation = 0; }
+};
+
+class ObjectInput
+{
+  private:
+    ObjectInputStream* in;
+
+  public:
+    ObjectInput(ObjectInputStream* in) : in(in) {}
+    virtual ~ObjectInput() {}
+
+                      void read(unsigned char* destination, const int& size) { in->read(destination, size); }
+    template<class T> void read(T& d) { read((unsigned char*) &d, sizeof(T)); }
+};
+
+class ObjectOutput
+{
+  private:
+    ObjectOutputStream* out;
+
+  public:
+    ObjectOutput(ObjectOutputStream* out) : out(out) {}
+    virtual ~ObjectOutput() {}
+
+                      void write(const unsigned char* source, const int& size) { out->write(source, size); }
+    template<class T> void write(const T& d) { write((const unsigned char*) &d, sizeof(T)); }
+};
+
+class Serializable
+{
+  public:
+    virtual ~Serializable() {}
+    virtual void serialize(ObjectInput* in, ObjectOutput* out) =0;
+
+    virtual size_t readFromBuffer(unsigned char *buffer)
+    {
+      BufferInputOutputStream b(buffer);
+      ObjectInput in(&b);
+      serialize(&in, 0);
+      return b.bufferLocation;
+    }
+
+    virtual size_t writeToBuffer(unsigned char *buffer)
+    {
+      BufferInputOutputStream b(buffer);
+      ObjectOutput out(&b);
+      serialize(0, &out);
+      return b.bufferLocation;
+    }
+
+  protected:
+    void serializeBuffer(ObjectInput* in, ObjectOutput* out, unsigned char* p, const int& size)
+    {
+      if (in)
+        in->read(p, size);
+      if (out)
+        out->write(p, size);
+    }
+
+    template <class T> void serializeObject(ObjectInput* in, ObjectOutput* out, const char*, T& p)
+    {
+        if (in)
+          in->read(p);
+        if (out)
+          out->write(p);
+    }
+};
+
+#define SERIALIZE_BUFFER(NAME, IN_OUT, SIZE)  serializeBuffer(in, out, IN_OUT, SIZE);
 
 // ADT's for building the graph.
 /**
@@ -148,38 +249,50 @@ class Node
 {
   public:
     typedef Vector<Node*> NodeVector;
+
   private:
     NodeVector nextNodes;
     NodeVector auxiliaryNodes;
-    Node* previousNode;
+    NodeVector previousNodes;
     int inDegrees;
     bool initialized;
     bool computationNode;
+    int threadIndex;
+    Node* transferredNode;
 
   public:
-    explicit Node() : previousNode(0), inDegrees(0), initialized(false), computationNode(false) {}
-    virtual ~Node() {}
-
+    explicit Node() : inDegrees(0), initialized(false), computationNode(false), threadIndex(0), transferredNode(0) {}
+    virtual ~Node() { nextNodes.clear(); auxiliaryNodes.clear(); previousNodes.clear(); }
     bool isInitialized()                                const { return initialized; }
-    void setInitialized(const bool initialized)               { if (!this->initialized) this->initialized = initialized; }
+    void setInitialized(const bool initialized)               { this->initialized = initialized; }
     bool isComputationNode()                            const { return computationNode; }
-    void setComputationNode(const bool computationNode)       { if (!initialized) this->computationNode = computationNode; }
-    void addAuxiliaryNode(Node* that)                         { if (!initialized) this->auxiliaryNodes.push_back(that);  }
-    void setPreviousNode(Node* that)                          { if (!initialized) this->previousNode = that;  }
-    void addNextNode(Node* that)                              { if (!initialized) this->nextNodes.push_back(that);  }
+    void setComputationNode(const bool computationNode)       { this->computationNode = computationNode; }
+    void addAuxiliaryNode(Node* that)                         { this->auxiliaryNodes.push_back(that);  }
+    void addPreviousNode(Node* that)                          { this->previousNodes.push_back(that); }
+    void addNextNode(Node* that)                              { this->nextNodes.push_back(that);  }
 
-    bool isPreviousNodeEmpty()                          const { return previousNode == 0; }
-    bool isNextNodesEmpty()                             const { return nextNodes.empty(); }
-    bool auxiliaryNodesEmpty()                          const { return auxiliaryNodes.empty(); }
-    NodeVector& getNextNodes()                                { return nextNodes; }
-    Node* getPreviousNode()                                   { return previousNode; }
-    NodeVector& getAuxiliaryNodes()                           { return auxiliaryNodes; }
-    void operator++()                                         { inDegrees++;  }
-    void operator--()                                         { inDegrees--; }
-    int getInDegrees()                              const { return inDegrees; }
-    virtual const char* getName() const =0;
+    bool isPreviousNodesEmpty()                         const { return this->previousNodes.empty(); }
+    bool auxiliaryNodesEmpty()                          const { return this->auxiliaryNodes.empty(); }
+    NodeVector& getNextNodes()                                { return this->nextNodes; }
+    NodeVector& getPreviousNodes()                            { return this->previousNodes; }
+    NodeVector& getAuxiliaryNodes()                           { return this->auxiliaryNodes; }
+    void operator++()                                         { this->inDegrees++;  }
+    void operator--()                                         { this->inDegrees--; }
+    int getInDegrees()                                  const { return inDegrees; }
+    void setInDegrees(const int& inDegrees)                   { this->inDegrees = inDegrees; }
+    int getThreadIndex()                                const { return threadIndex; }
+    void setThreadIndex(const int& threadIndex)               { this->threadIndex = threadIndex; }
+    void setTransferredNode(Node* transferredNode)              { this->transferredNode = transferredNode; }
+    Node* getTransferredNode()                          const { return this->transferredNode; }
+    virtual const char* getName()                       const =0;
+    virtual unsigned int getSize()                      const =0;
+
+  protected: // Copy constructor and operator is not allowed inside the framework
+    Node(Node const&);
+    Node& operator=(Node const&);
 };
 
+// -- Modules
 class Module : public Node
 {
 #if !defined(EMBEDDED_MODE)
@@ -191,22 +304,60 @@ class Module : public Node
   public: virtual void execute()  {}
 };
 
-class Representation: public Node
+template<class T>
+class ModuleTemplate : public Module
+{
+  public: ModuleTemplate()          {}
+  public: virtual ~ModuleTemplate() {}
+  public: virtual unsigned int getSize() const { return sizeof(T); }
+  public: void stream(Node*)      {}
+};
+
+// -- Representations
+class Representation: public Node, public Serializable
 {
   public: void (*updateThis)(Node* , Node* );
   public: Representation() : Node(), updateThis(0)  {}
   public: virtual ~Representation()                 {}
   public: virtual void draw() const                 {}
+  public:
+    virtual void serialize(ObjectInput* in, ObjectOutput* out)
+    {
+      const size_t baseSize = sizeof(Representation);
+      unsigned char* p = (unsigned char*) this;
+      SERIALIZE_BUFFER(getName(), p + baseSize, getSize() - baseSize);
+    }
+#if !defined(EMBEDDED_MODE)
+  public:
+    std::mutex sync;
+#endif
 };
 
-class Graph
+template<class T>
+class RepresentationTemplate : public Representation
+{
+  public: RepresentationTemplate()          {}
+  public: virtual ~RepresentationTemplate() {}
+  public: virtual unsigned int getSize() const { return sizeof(T); }
+};
+
+class RepresentationCloneable
+{
+  public: RepresentationCloneable() {}
+  public: virtual ~RepresentationCloneable() {}
+  public: virtual Node* clone(Node* that)  =0;
+};
+
+class Controller
 {
   public:
     class ModuleEntry
     {
       public:
+        const char* threadName;
+        const int threadPriority;
         Node* moduleNode;
-        ModuleEntry(Node* moduleNode) : moduleNode(moduleNode) {}
+        ModuleEntry(const char* threadName, const int& threadPriority, Node* moduleNode) : threadName(threadName), threadPriority(threadPriority), moduleNode(moduleNode) {}
     };
 
     class RepresentationEntry
@@ -215,9 +366,10 @@ class Graph
         const char* providedModuleName;
         Node* representationNode;
         void (*update)(Node*, Node*);
+        RepresentationCloneable* representationCloneable;
 
-        RepresentationEntry(const char* providedModuleName, Node* representationNode, void (*update)(Node*, Node*)) :
-            providedModuleName(providedModuleName), representationNode(representationNode), update(update) {}
+        RepresentationEntry(const char* providedModuleName, Node* representationNode, void (*update)(Node*, Node*), RepresentationCloneable* representationCloneable) :
+            providedModuleName(providedModuleName), representationNode(representationNode), update(update), representationCloneable(representationCloneable) {}
     };
 
     class ModuleRepresentationEntry
@@ -230,64 +382,126 @@ class Graph
           requiredModuleName(requiredModuleName), requiredRepresentationName(requiredRepresentationName) {}
     };
 
+    class Thread
+    {
+      public:
+        const char* threadName;
+        int threadIndex;
+        int threadPriority;
+        bool isActive;
+        typedef Vector<Node*> NodeVector;
+        //-- Intermediate vectors
+        NodeVector graphStructureVector;
+        NodeVector transferredVector;
+        NodeVector topoQueue;
+        //-- Operation vector
+        NodeVector operationVector;
+        //-- Transfer objects between threads
+        unsigned char* buffer;
+#if !defined(EMBEDDED_MODE)
+        enum { BUFFER_SIZE = 512 }; // some storage capacity (bytes)
+#endif
+        Thread(const char* threadName, const int& threadPriority, const int& threadIndex) :
+            threadName(threadName), threadIndex(threadIndex), threadPriority(threadPriority), isActive(
+                false), buffer(0)
+        {
+#if !defined(EMBEDDED_MODE)
+          buffer = new unsigned char[BUFFER_SIZE];
+#endif
+        }
+
+        virtual ~Thread()
+        {
+          for (NodeVector::iterator iter = transferredVector.begin();
+              iter != transferredVector.end(); ++iter)
+            delete *iter;
+          graphStructureVector.clear();
+          transferredVector.clear();
+          topoQueue.clear();
+          operationVector.clear();
+
+#if !defined(EMBEDDED_MODE)
+          delete[] buffer;
+#endif
+        }
+    };
+
+    // For topological sort
+    bool threadsActivated;
+    bool errorState;
+#if defined(EMBEDDED_MODE)
+    typedef String MyString;
+#else
+    typedef std::string MyString;
+#endif
+    MyString errorMsg;
+
     typedef Vector<ModuleEntry*> ModuleVector;
     typedef Vector<RepresentationEntry*> RepresentationVector;
     typedef Vector<ModuleRepresentationEntry*> ModuleRepresentationVector;
-    typedef Vector<Node*> GraphStructureVector;
+    typedef Vector<Thread*> ThreadVector;
+
     ModuleVector moduleVector;
     RepresentationVector representationVector;
     ModuleRepresentationVector moduleRepresentationRequiredVector;
     ModuleRepresentationVector moduleRepresentationUsedVector;
-    GraphStructureVector graphStructureVector;
-
-    // For topological sort
-    typedef Vector<Node*> TopoQueue;
-    typedef Vector<Node*> GraphOutput;
-    TopoQueue topoQueue;
-    GraphOutput graphOutput;
-    bool errorState;
-#if defined(EMBEDDED_MODE)
-    typedef String ErrorMsg;
-#else
-    typedef std::string ErrorMsg;
-#endif
-    ErrorMsg errorMsg;
+    ThreadVector threadVector;
 
 #if defined(EMBEDDED_MODE)
     unsigned long baudRate;
 #endif
 
-    static Graph& getInstance();
+    static Controller& getInstance();
     static void deleteInstance();
-    void addModule(Node* theInstance);
-    void providedRepresentation(const char* moduleName, Node* theInstance, void (*updateRepresentation)(Node* , Node* ));
+    void addModule(const char* threadName, const int& threadPriority, Node* theInstance);
+    void providedRepresentation(const char* moduleName, Node* theInstance, void (*updateRepresentation)(Node* , Node* ), RepresentationCloneable* representationCloneable);
     void requiredRepresentation(const char* moduleName, const char* representationName);
     void usedRepresentation(const char* moduleName, const char* representationName);
-    Node* getRepresentation(const char* representationName);
+    Node* getRepresentation(const char* moduleName, const char* representationName);
 
     /** Computational resources */
+    void activateThreads(const bool& threadsActivated);
     void computeGraph();
-    void topoSort();
-    void graphOutputInit();
-    void graphOutputUpdate();
+    void sort();
 
 #if defined(EMBEDDED_MODE)
+    void setup();
+    void loop();
+
     void setBaudRate(const unsigned long& baudRate);
     unsigned long getBaudRate() const;
 #endif
 
   private:
+    static void threadAllocate(Thread* thread);
+#if !defined(EMBEDDED_MODE)
+    static void threadTransfer(Thread* thread);
+#endif
+    static void threadUpdate(Thread* thread);
+    static void threadLoop(Thread* thread);
+
+#if !defined(EMBEDDED_MODE)
+    void mainLoop();
+    void mainThreadLoop();
+#endif
+
+    void closeThreads();
     void errorHandler();
     void purgeEntries();
+    void forcedExit(const MyString& errorMsg);
 
   protected:
-    Graph();
-    ~Graph();
-    Graph(Graph const&);
-    Graph& operator=(Graph const&);
-    static Graph* theInstance;
+    Controller();
+    ~Controller();
+    Controller(Controller const&);
+    Controller& operator=(Controller const&);
+    static Controller* theInstance;
 
-  public: /** verbose */
+  public:
+#if !defined(EMBEDDED_MODE)
+    static void main(const bool& threadsActivated);
+#endif
+    /** verbose */
     void stream();
 };
 
@@ -297,19 +511,27 @@ class ModuleLoader
 {
   private:
     T theInstance;
+
   public:
-    ModuleLoader() { Graph::getInstance().addModule(&theInstance); }
-    ~ModuleLoader() { }
+    ModuleLoader(const char* threadName, const int& threadPriority) { Controller::getInstance().addModule(threadName, threadPriority, &theInstance); }
+    virtual ~ModuleLoader() { }
 };
 
 template<const char* (*getModuleName)(), void (*updateRepresentation)(Node*, Node*), class T>
-class RepresentationProvider
+class RepresentationProvider : public RepresentationCloneable
 {
   private :
     T theInstance;
+
   public:
-    RepresentationProvider() { Graph::getInstance().providedRepresentation(getModuleName(), &theInstance, updateRepresentation); }
+    RepresentationProvider() { Controller::getInstance().providedRepresentation(getModuleName(), &theInstance, updateRepresentation, this); }
     virtual ~RepresentationProvider() { }
+    Node* clone(Node* that)
+    {
+      Node* newNode = new T();
+      newNode->setTransferredNode(that);
+      return newNode;
+    }
 };
 
 template<const char* (*getModuleName)(), const char* (*getRepresentationName)(), class T>
@@ -326,7 +548,7 @@ class RepresentationPointer
     inline T* getRepresentation()
     {
       if (!theInstance)
-        theInstance = (T*) Graph::getInstance().getRepresentation(getRepresentationName());
+        theInstance = (T*) Controller::getInstance().getRepresentation(getModuleName(), getRepresentationName());
       return theInstance;
     }
 
@@ -334,7 +556,7 @@ class RepresentationPointer
     {
       if (!theInstance)
         return theInstance;
-      return (T*) Graph::getInstance().getRepresentation(getRepresentationName()); //<< SLOW for CONST ACCESS
+      return (T*) Controller::getInstance().getRepresentation(getModuleName(), getRepresentationName()); //<< SLOW for CONST ACCESS
     }
 
   public:
@@ -348,7 +570,7 @@ template<const char* (*getModuleName)(), const char* (*getRepresentationName)(),
 class RepresentationRequierer : public RepresentationPointer<getModuleName, getRepresentationName, T>
 {
   public:
-    RepresentationRequierer() { Graph::getInstance().requiredRepresentation(getModuleName(), getRepresentationName()); }
+    RepresentationRequierer() { Controller::getInstance().requiredRepresentation(getModuleName(), getRepresentationName()); }
     virtual ~RepresentationRequierer() { }
 
   public:
@@ -365,7 +587,7 @@ template<const char* (*getModuleName)(), const char* (*getRepresentationName)(),
 class RepresentationUser : public RepresentationPointer<getModuleName, getRepresentationName, T>
 {
   public:
-    RepresentationUser() { Graph::getInstance().usedRepresentation(getModuleName(), getRepresentationName()); }
+    RepresentationUser() { Controller::getInstance().usedRepresentation(getModuleName(), getRepresentationName()); }
     virtual ~RepresentationUser() { }
 
   public:

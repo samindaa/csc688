@@ -17,6 +17,8 @@ UI_DIR = $$DESTDIR/.ui
 TARGET = viz
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -std=c++0x -D_GLIBCXX_USE_NANOSLEEP
+
 SOURCES += Main.cpp \
 	Plot.cpp \
 	Window.cpp \
@@ -26,8 +28,9 @@ SOURCES += Main.cpp \
         plot/qcustomplot.cpp \
         ../Config.cpp \
 	../Framework.cpp \
-	../nao/RS232Module.cpp \
-	../nao/rs232.cpp
+        ../FrameworkDebug.cpp \
+        ../SerialPort.cpp \
+	../nao/RS232Module.cpp
 	
 HEADERS  += Plot.h \
 	Window.h \
@@ -39,9 +42,9 @@ HEADERS  += Plot.h \
 	../Template.h \
 	../Framework.h \
 	../FloatDetails.h \
+        ../SerialPort.h \
 	../nao/RS232Module.h \
-	../nao/RS232Representation.h \
- 	../nao/rs232.h 
+	../nao/RS232Representation.h 
 
 LIBS  += 
 

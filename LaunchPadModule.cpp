@@ -10,11 +10,13 @@
 #include "Wire.h"
 #endif
 
+MAKE_MODULE(LaunchPadModule)
+
 void LaunchPadModule::init()
 {
 #if defined(ENERGIA)
   // Serial port
-  Serial.begin(Graph::getInstance().getBaudRate());
+  Serial.begin(Controller::getInstance().getBaudRate());
   // LED
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
@@ -40,6 +42,3 @@ void LaunchPadModule::update(LaunchPadRepresentation& theLaunchPadRepresentation
   theLaunchPadRepresentation.push2Active = true;
   theLaunchPadRepresentation.wireActive = true;
 }
-
-MAKE_MODULE(LaunchPadModule)
-

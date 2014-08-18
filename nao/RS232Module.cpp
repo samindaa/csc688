@@ -85,7 +85,7 @@ void RS232Module::update(RS232Representation::Inputs& pfInputs)
 
       }
     }
-    //printf("received %i bytes: %s\n", n, (char *) buf);
+    printf("received %i bytes: %s\n", n, (char *) buf);
   }
   // debug
   //myDebug(pfInputs);

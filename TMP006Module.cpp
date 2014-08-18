@@ -10,6 +10,8 @@
 #include "Wire.h"
 #endif
 
+MAKE_MODULE(TMP006Module)
+
 //*****************************************************************************
 //
 // The constants used to calculate object temperature.
@@ -122,5 +124,3 @@ uint16_t TMP006Module::read16(uint8_t cmd)
   return 0;
 #endif
 }
-
-MAKE_MODULE(TMP006Module)

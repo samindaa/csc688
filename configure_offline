@@ -1,7 +1,0 @@
-#!/bin/bash
-
-./configure target="csc688" \
-               cflags="-I. -I./offline -ggdb -Wno-deprecated -fPIC" \
-               lflags="" \
-               ignore="'viz/*' 'viz/plot/*' 'build/.moc/*'" \
-               bin="build/offline_csc688"

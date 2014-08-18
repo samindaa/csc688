@@ -14,7 +14,8 @@ void signalHandler(int signum)
   std::cout << "Interrupt signal (" << signum << ") received" << std::endl;
   // cleanup and close up stuff here
   // terminate program
-  Graph::deleteInstance();
+  //Communication::getInstance().closeInstance();
+  Controller::deleteInstance();
   exit(signum);
 }
 
@@ -23,15 +24,9 @@ int main(int argc, char** argv)
   std::cout << "*** start ***" << std::endl;
   // register signal SIGINT and signal handler
   signal(SIGINT, signalHandler);
-  Graph& graph = Graph::getInstance();
-  graph.computeGraph();
-  graph.topoSort();
-  graph.stream();
-  graph.graphOutputInit();
-  for (;;)
-    Graph::getInstance().graphOutputUpdate();
-  Graph::deleteInstance();
-  std::cout << "*** end ***" << std::endl;
+  Controller::getInstance().main(false);
+  Controller::deleteInstance();
+  std::cout << "*** end  ***" << std::endl;
   return 0;
 }
 

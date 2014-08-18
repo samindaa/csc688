@@ -11,7 +11,7 @@ MAKE_MODULE(LightPredictionModule)
 
 LightPredictionModule::LightPredictionModule() :
     gridResolution(8), nbTilings(4), nbInputs(3), memorySize(64), nbTrainingSample(0), nbMaxTrainingSamples(
-        10000)
+        5000)
 {
   random = new RLLib::Random<float>;
   input = new RLLib::PVector<float>(nbInputs);
@@ -36,9 +36,9 @@ void LightPredictionModule::update(PredictionRepresentation& thePredictionRepres
 #if defined(ENERGIA)
   thePredictionRepresentation.target = theISL29023Representation->fAmbient;
 
-  input->setEntry(0, inputRange->toUnit(cos(theMPU9150Representation->fRoll)));
-  input->setEntry(1, inputRange->toUnit(cos(theMPU9150Representation->fPitch)));
-  input->setEntry(2, inputRange->toUnit(cos(theMPU9150Representation->fYaw)));
+  input->setEntry(0, inputRange->toUnit(cos(theMPU9150Representation->fRoll * M_PI / 180.0f)));
+  input->setEntry(1, inputRange->toUnit(cos(theMPU9150Representation->fPitch * M_PI / 180.0f)));
+  input->setEntry(2, inputRange->toUnit(cos(theMPU9150Representation->fYaw * M_PI / 180.0f)));
 
   const RLLib::Vector<float>* featureVector = projector->project(input);
   if (nbTrainingSample++ < nbMaxTrainingSamples)
