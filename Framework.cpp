@@ -557,14 +557,11 @@ void Controller::mainThreadLoop()
 
 void Controller::main(const bool& threadsActivated)
 {
-  if (theInstance)
-  {
-    theInstance->activateThreads(threadsActivated);
-    theInstance->computeGraph();
-    theInstance->sort();
-    theInstance->stream();
-    theInstance->mainLoop();
-  }
+  activateThreads(threadsActivated);
+  computeGraph();
+  sort();
+  stream();
+  mainLoop();
 }
 
 #endif
