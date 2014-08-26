@@ -28,8 +28,8 @@ MAKE_MODULE(TMP006Module)
 void TMP006Module::update(TMP006Representation& theTMP006Representation)
 {
 #if defined(ENERGIA)
-  parameters.i16Object = read16(TMP006_O_VOBJECT);
-  parameters.i16Ambient = read16(TMP006_O_TAMBIENT);
+  parameters.i16Object = readRegister(TMP006_O_VOBJECT);
+  parameters.i16Ambient = readRegister(TMP006_O_TAMBIENT);
 
   float fTdie2, fS, fVo, fVx, fObj;
 
@@ -84,7 +84,8 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   //
   // Finally calculate the object temperature.
   //
-  parameters.fObject = (sqrtf(sqrtf((fTdie2 * fTdie2 * fTdie2 * fTdie2) + (fObj / fS))) - T_REF);
+  theTMP006Representation.fObject = (sqrtf(sqrtf((fTdie2 * fTdie2 * fTdie2 * fTdie2) + (fObj / fS)))
+      - T_REF);
 
   //
   // Convert the floating point ambient temperature  to an integer part
@@ -103,7 +104,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
 #endif
 }
 
-uint16_t TMP006Module::read16(uint8_t cmd)
+uint16_t TMP006Module::readRegister(uint8_t cmd)
 {
 #if defined(ENERGIA)
   // Send request

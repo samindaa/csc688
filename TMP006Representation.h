@@ -15,8 +15,9 @@ class TMP006Representation: public TMP006RepresentationBase
 {
   public:
     float fAmbient;
+    float fObject;
     TMP006Representation() :
-        fAmbient(0)
+        fAmbient(0), fObject(0)
     {
     }
 };

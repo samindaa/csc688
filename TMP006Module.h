@@ -13,7 +13,6 @@
 #include "TMP006Representation.h"
 #include "hw_tmp006.h"
 
-
 //*****************************************************************************
 //
 // Define TMP006 I2C Address.
@@ -42,15 +41,12 @@ class TMP006Module: public TMP006ModuleBase
         //
         float fCalibrationFactor;
 
-        float fObject;
-
         uint16_t i16Object;
 
         uint16_t i16Ambient;
 
         TMP006() :
-            ui8Addr(TMP006_I2C_ADDRESS), fCalibrationFactor(6.40e-14), fObject(0), i16Object(0), i16Ambient(
-                0)
+            ui8Addr(TMP006_I2C_ADDRESS), fCalibrationFactor(6.40e-14), i16Object(0), i16Ambient(0)
         {
         }
     };
@@ -61,7 +57,7 @@ class TMP006Module: public TMP006ModuleBase
     void update(TMP006Representation& theTMP006Representation);
 
   private:
-    uint16_t read16(uint8_t cmd);
+    uint16_t readRegister(uint8_t cmd);
 };
 
 #endif /* TMP006MODULE_H_ */
