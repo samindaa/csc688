@@ -9,7 +9,6 @@
 #define ISL29023MODULE_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "ISL29023Representation.h"
 #include "hw_isl29023.h"
 
@@ -21,7 +20,6 @@
 #define ISL29023_I2C_ADDRESS    0x44
 
 MODULE(ISL29023Module)
-  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(ISL29023Representation)
 END_MODULE
 

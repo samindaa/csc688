@@ -9,7 +9,6 @@
 #define BMP180MODULE_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "BMP180Representation.h"
 #include "hw_bmp180.h"
 
@@ -22,7 +21,6 @@
 #define BMP180_I2C_ADDRESS      0x77
 
 MODULE(BMP180Module)
-  REQUIRES(LaunchPadRepresentation)
   PROVIDES(BMP180Representation)
 END_MODULE
 class BMP180Module: public BMP180ModuleBase

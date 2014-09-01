@@ -9,7 +9,6 @@
 #define MPU9150MODULE_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "MPU9150Representation.h"
 #include "hw_mpu9150.h"
 #include "hw_ak8975.h"
@@ -38,7 +37,6 @@
 
 
 MODULE(MPU9150Module)
-  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(MPU9150Representation)
 END_MODULE
 class MPU9150Module: public MPU9150ModuleBase

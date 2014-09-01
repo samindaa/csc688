@@ -9,7 +9,6 @@
 #define SHT21MODULE_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "SHT21Representation.h"
 #include "hw_sht21.h"
 
@@ -21,7 +20,6 @@
 #define SHT21_I2C_ADDRESS  0x40
 
 MODULE(SHT21Module)
-  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(SHT21Representation)
 END_MODULE
 class SHT21Module: public SHT21ModuleBase

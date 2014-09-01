@@ -9,11 +9,9 @@
 #define TESTMODULE1_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "TestRepresentation1.h"
 
 MODULE(TestModule1)
-  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(TestRepresentation1) //
 END_MODULE
 

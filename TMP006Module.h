@@ -9,7 +9,6 @@
 #define TMP006MODULE_H_
 
 #include "Template.h"
-#include "LaunchPadRepresentation.h"
 #include "TMP006Representation.h"
 #include "hw_tmp006.h"
 
@@ -21,7 +20,6 @@
 #define TMP006_I2C_ADDRESS      0x41
 
 MODULE(TMP006Module)
-  REQUIRES(LaunchPadRepresentation) //
   PROVIDES(TMP006Representation)
 END_MODULE
 class TMP006Module: public TMP006ModuleBase
