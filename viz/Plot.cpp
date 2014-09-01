@@ -6,6 +6,7 @@
  */
 
 #include "Plot.h"
+#include <sstream>
 
 Plot::Plot(QWidget *parent) :
     QWidget(parent)
@@ -20,11 +21,11 @@ Plot::Plot(QWidget *parent) :
   for (int i = 0; i < x.size(); i++)
     x[i] = i;
 
-  nbPlots.push_back(Qt::lightGray);
   nbPlots.push_back(Qt::red);
   nbPlots.push_back(Qt::green);
   nbPlots.push_back(Qt::blue);
 
+  nbPlots.push_back(Qt::lightGray);
   nbPlots.push_back(Qt::black);
   nbPlots.push_back(Qt::darkRed);
   nbPlots.push_back(Qt::darkGreen);
@@ -40,7 +41,7 @@ Plot::Plot(QWidget *parent) :
   nbPlots.push_back(Qt::darkYellow);
   nbPlots.push_back(Qt::darkGray);
 
-  // Up-to-4 graphs
+  // Up-to-nbPlots.size() graphs
   for (int i = 0; i < (int) nbPlots.size(); i++)
   {
     yValues.push_back(QVector<double>());
@@ -54,10 +55,14 @@ Plot::Plot(QWidget *parent) :
   {
     plot->addGraph();
     plot->graph(i)->setPen(QPen(nbPlots[i]));
+    std::stringstream ss;
+    ss << i << ": rx";
+    plot->graph(i)->setName(ss.str().c_str());
   }
 
   plot->xAxis->setLabel("Time");
   plot->yAxis->setLabel("Values");
+  plot->legend->setVisible(true);
   setLayout(grid);
 }
 
@@ -70,6 +75,7 @@ void Plot::slots_draw(const std::vector<float>& pfInput)
   for (int i = 1; i < x.size(); i++)
     x[i - 1] = x[i];
   ++x[x.size() - 1];
+
   // O(N)
   for (size_t i = 0; i < yValues.size(); i++)
   {
@@ -81,7 +87,7 @@ void Plot::slots_draw(const std::vector<float>& pfInput)
   {
     yValues[i][yValues[i].size() - 1] = pfInput[i];
     plot->graph(i)->setData(x, yValues[i]);
-    plot->graph(i)->rescaleAxes();
+    //plot->graph(i)->rescaleAxes();
   }
   plot->xAxis->setRange(x[0], x[x.size() - 1]);
   plot->rescaleAxes();

@@ -39,12 +39,13 @@ class TMP006Module: public TMP006ModuleBase
         //
         float fCalibrationFactor;
 
-        uint16_t i16Object;
-
-        uint16_t i16Ambient;
+        //
+        // The data buffer used for sending/receiving data to/from the TMP006.
+        //
+        uint8_t pui8Data[4];
 
         TMP006() :
-            ui8Addr(TMP006_I2C_ADDRESS), fCalibrationFactor(6.40e-14), i16Object(0), i16Ambient(0)
+            ui8Addr(TMP006_I2C_ADDRESS), fCalibrationFactor(6.40e-14)
         {
         }
     };
@@ -52,10 +53,12 @@ class TMP006Module: public TMP006ModuleBase
     TMP006 parameters;
 
   public:
+    void init();
     void update(TMP006Representation& theTMP006Representation);
 
   private:
-    uint16_t readRegister(uint8_t cmd);
+    int16_t readRegister(const uint8_t& cmd);
+    void writeRegister(const uint8_t& ui8Count);
 };
 
 #endif /* TMP006MODULE_H_ */

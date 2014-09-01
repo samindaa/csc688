@@ -13,11 +13,13 @@
 
 // Sending representations
 #include "TestRepresentation2.h"
+#include "TMP006Representation.h"
 #include "MPU9150Representation.h"
 #include "PredictionRepresentation.h"
 
 MODULE(SendModule)
   REQUIRES(TestRepresentation2) //
+  REQUIRES(TMP006Representation) //
   REQUIRES(MPU9150Representation) //
   REQUIRES(PredictionRepresentation) //
 END_MODULE

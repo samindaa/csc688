@@ -25,11 +25,22 @@ MAKE_MODULE(TMP006Module)
 #define B2                      4.63e-09
 #define C2                      13.4
 
+void TMP006Module::init()
+{
+  //
+  // Load the data buffer to write the reset sequence
+  //
+  parameters.pui8Data[0] = TMP006_O_CONFIG;
+  parameters.pui8Data[1] = (uint8_t) (TMP006_CONFIG_RESET_ASSERT >> 8);
+  parameters.pui8Data[2] = (uint8_t) (TMP006_CONFIG_RESET_ASSERT & 0x00FF);
+  writeRegister(3);
+}
+
 void TMP006Module::update(TMP006Representation& theTMP006Representation)
 {
 #if defined(ENERGIA)
-  parameters.i16Object = readRegister(TMP006_O_VOBJECT);
-  parameters.i16Ambient = readRegister(TMP006_O_TAMBIENT);
+  int16_t i16Object = readRegister(TMP006_O_VOBJECT);
+  int16_t i16Ambient = readRegister(TMP006_O_TAMBIENT);
 
   float fTdie2, fS, fVo, fVx, fObj;
 
@@ -37,7 +48,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // The bottom two bits are not temperature data, so discard them but keep
   // the sign information.
   //
-  theTMP006Representation.fAmbient = (float) (parameters.i16Ambient / 4);
+  theTMP006Representation.fAmbient = (float) (i16Ambient / 4);
 
   //
   // Divide by 32 to get unit scaling correct.
@@ -74,7 +85,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
   // 156.25e-9 is nanovolts per least significant bit from the voltage
   // register.
   //
-  fVx = (((float) parameters.i16Object) * 156.25e-9) - fVo;
+  fVx = (((float) i16Object) * 156.25e-9) - fVo;
 
   //
   // fObj is the feedback coefficient.
@@ -104,7 +115,7 @@ void TMP006Module::update(TMP006Representation& theTMP006Representation)
 #endif
 }
 
-uint16_t TMP006Module::readRegister(uint8_t cmd)
+int16_t TMP006Module::readRegister(const uint8_t& cmd)
 {
 #if defined(ENERGIA)
   // Send request
@@ -123,5 +134,15 @@ uint16_t TMP006Module::readRegister(uint8_t cmd)
   return (Wire.read() << 8 | Wire.read());
 #else
   return 0;
+#endif
+}
+
+void TMP006Module::writeRegister(const uint8_t& ui8Count)
+{
+#if defined(ENERGIA)
+  Wire.beginTransmission(parameters.ui8Addr);
+  for (uint8_t i = 0; i < ui8Count; i++)
+    Wire.write(parameters.pui8Data[i]);
+  Wire.endTransmission();
 #endif
 }

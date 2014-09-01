@@ -10,7 +10,7 @@
 MAKE_MODULE(TestModule2)
 
 TestModule2::TestModule2() :
-    ledState(0x01), prevTime(0), collectData(false)
+    ledState(0x1), prevTime(0), collectData(false)
 {
 }
 
@@ -31,15 +31,15 @@ void TestModule2::execute()
 
   if (collectData)
   {
-    //digitalWrite(RED_LED, LOW);
-    //digitalWrite(GREEN_LED, LOW);
-    //digitalWrite(BLUE_LED, LOW);
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
   }
   else
   {
-    //digitalWrite(RED_LED, LOW);
-    //digitalWrite(GREEN_LED, LOW);
-    //digitalWrite(BLUE_LED, ledState);
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, ledState);
   }
 
   /*if (collectData)

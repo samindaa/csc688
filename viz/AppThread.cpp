@@ -18,5 +18,10 @@ AppThread::~AppThread()
 
 void AppThread::run()
 {
-  Controller::getInstance().main(false);
+  Controller::getInstance().setup(0);
+  for (;;)
+  {
+    Controller::getInstance().loop();
+    QThread::msleep(2); // Give other threads some chance to run
+  }
 }

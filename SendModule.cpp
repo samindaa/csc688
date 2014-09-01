@@ -17,21 +17,25 @@ void SendModule::execute()
     Serial.print("{"); //<< SOF
     // Write the
 
-    floatToBytes(theMPU9150Representation->fAccelX);
-    floatToBytes(theMPU9150Representation->fAccelY);
-    floatToBytes(theMPU9150Representation->fAccelZ);
-    floatToBytes(theMPU9150Representation->fGyroX);
-    floatToBytes(theMPU9150Representation->fGyroY);
-    floatToBytes(theMPU9150Representation->fGyroZ);
-    floatToBytes(theMPU9150Representation->fMagnetoX);
-    floatToBytes(theMPU9150Representation->fMagnetoY);
-    floatToBytes(theMPU9150Representation->fMagnetoZ);
-    floatToBytes(theMPU9150Representation->fRoll);
-    floatToBytes(theMPU9150Representation->fPitch);
-    floatToBytes(theMPU9150Representation->fYaw);
+    floatToBytes(theTMP006Representation->fAmbient);
+    floatToBytes(theTMP006Representation->fObject);
 
-//    floatToBytes(thePredictionRepresentation->target);
-//    floatToBytes(thePredictionRepresentation->prediction);
+    /*floatToBytes(theMPU9150Representation->fAccelX);
+     floatToBytes(theMPU9150Representation->fAccelY);
+     floatToBytes(theMPU9150Representation->fAccelZ);
+     floatToBytes(theMPU9150Representation->fGyroX);
+     floatToBytes(theMPU9150Representation->fGyroY);
+     floatToBytes(theMPU9150Representation->fGyroZ);
+     floatToBytes(theMPU9150Representation->fMagnetoX);
+     floatToBytes(theMPU9150Representation->fMagnetoY);
+     floatToBytes(theMPU9150Representation->fMagnetoZ);
+     floatToBytes(theMPU9150Representation->fRoll);
+     floatToBytes(theMPU9150Representation->fPitch);
+     floatToBytes(theMPU9150Representation->fYaw);*/
+
+    /*floatToBytes(thePredictionRepresentation->target);
+     floatToBytes(thePredictionRepresentation->prediction);*/
+
     Serial.println("}");    //<< EOF
   }
 #endif
