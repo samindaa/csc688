@@ -22,6 +22,6 @@ void AppThread::run()
   for (;;)
   {
     Controller::getInstance().loop();
-    QThread::msleep(2); // Give other threads some chance to run
+    QThread::msleep(5); // Give other threads some chance to run
   }
 }

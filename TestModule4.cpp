@@ -10,6 +10,8 @@
 
 #include <stdlib.h>
 
+MAKE_MODULE(TestModule4)
+
 #define N  (2)
 
 float A[N][N];
@@ -91,5 +93,3 @@ void TestModule4::execute()
   //Matrix.print((float*) w, N, 1, "w");
   //std::cout << "[] [] []" << std::endl;
 }
-
-MAKE_MODULE(TestModule4)

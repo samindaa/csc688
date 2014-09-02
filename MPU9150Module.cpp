@@ -17,7 +17,7 @@ MAKE_MODULE(MPU9150Module)
 // Define MPU9150 data sampling frequency.
 //
 //*****************************************************************************
-#define MOTION_SAMPLE_FREQ_HZ   50
+#define MOTION_SAMPLE_FREQ_HZ   100
 
 //*****************************************************************************
 //
@@ -209,9 +209,10 @@ void MPU9150Module::init()
       parameters.command.pui8Buffer[0] = MPU9150_O_SMPLRT_DIV;
 
       //
-      // Set sample rate to 50 hertz.  1000 hz / (1 + 19)
+      // Set sample rate to 50  hertz.  1000 hz / (1 + 19)
+      // Set sample rate to 100 hertz.  1000 hz / (1 +  9)
       //
-      parameters.command.pui8Buffer[1] = 19;
+      parameters.command.pui8Buffer[1] = 9; //19 for 50Hz and 9 for 100Hz
       I2CMWrite(2);
 
       //
