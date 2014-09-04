@@ -34,14 +34,11 @@ void Controller::errorHandler()
         prevTime2 = millis();
         ledErrorState ^= HIGH;
       }
-#if defined(RED_LED)
       digitalWrite(RED_LED, ledErrorState);
-#endif
     }
   }
 #endif
 }
-
 
 void Controller::forcedExit(const MyString& errorMsg)
 {
@@ -51,7 +48,6 @@ void Controller::forcedExit(const MyString& errorMsg)
 #endif
   errorState = true;
 }
-
 
 void Controller::stream()
 {
@@ -147,8 +143,8 @@ void Controller::stream()
           iter2 != thread->transferredVector.end(); iter2++)
       {
         Node* x = *iter2;
-        graph << "\t node [shape=ellipse, fillcolor=\"orange:yellow\","
-            << " style=filled, penwidth=3, gradientangle=270]; \n";
+        graph << "\t node [shape=egg, fillcolor=\"orange:yellow\","
+            << " style=filled, penwidth=2, gradientangle=270]; \n";
         graph << " " << x->getName() << "; \n";
       }
       graph << "\n";
@@ -164,7 +160,7 @@ void Controller::stream()
           Node* y = *j;
           if (y->isComputationNode())
           {
-            graph << "edge [color=pink]; \n";
+            graph << "edge [color=black]; \n";
             graph << "\t" << x->getName() << " -> " << y->getName() << "; \n";
           }
         }
