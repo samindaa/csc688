@@ -12,7 +12,6 @@
 
 #if defined(ENERGIA)
 //#include "lprf.h"
-//#include "buttons.h"
 #endif
 
 MODULE(TestModule5)

@@ -625,10 +625,10 @@ void Controller::threadAllocate(Thread* thread)
       module->config.setPath("config");
       module->config.resurrect();
 #endif
-      module->init();
 #if defined(EMBEDDED_MODE)
       Serial.println(node->getName());
 #endif
+      module->init();
     }
   }
 }

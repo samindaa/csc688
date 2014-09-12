@@ -7,7 +7,7 @@
 
 #include "TestModule5.h"
 
-//MAKE_MODULE(TestModule5)
+MAKE_MODULE(TestModule5)
 
 TestModule5::TestModule5() :
     ledState(0x1), prevTime(0)
@@ -17,8 +17,7 @@ TestModule5::TestModule5() :
 void TestModule5::init()
 {
 #if defined(ENERGIA)
-  //ButtonsInit();
-//  LPRFInit();
+  //LPRFInit();
 #endif
 }
 
@@ -35,7 +34,7 @@ void TestModule5::execute()
    digitalWrite(RED_LED, LOW);
    digitalWrite(GREEN_LED, LOW); // ledState
    digitalWrite(BLUE_LED, LOW);
-*/
+   */
 #endif
 
 #if defined(ENERGIA)
